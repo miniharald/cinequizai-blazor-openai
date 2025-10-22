@@ -3,7 +3,12 @@ using CineQuizAI.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using CineQuizAI.Web.Endpoints;
 using CineQuizAI.Web.Components; // App component
+
+// DI: interface (Application) + impl (Infrastructure)
+using CineQuizAI.Application.Abstractions.Security;
+using CineQuizAI.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +33,9 @@ builder.Services
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
+// Token service via interface — TODO: tune lifetime
+builder.Services.AddScoped<ITokenService, TokenService>();
+
 // Blazor Server
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
@@ -41,14 +49,19 @@ if (!app.Environment.IsDevelopment())
 
 app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
-app.UseStaticFiles();         // required for wwwroot assets
+app.UseStaticFiles();   // TODO: static assets
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseAntiforgery();         // required for components with antiforgery metadata
+app.UseAntiforgery();   // TODO: required for components
 
 app.MapRazorComponents<App>()
    .AddInteractiveServerRenderMode();
+
+app.MapRazorComponents<App>()
+   .AddInteractiveServerRenderMode();
+
+app.MapAuthEndpoints(); // TODO: map more endpoint groups later
 
 app.Run();
