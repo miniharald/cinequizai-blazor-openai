@@ -1,0 +1,83 @@
+﻿@page "/auth/register"
+
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.Extensions.Localization
+@using CineQuizAI.Infrastructure.Identity
+@using CineQuizAI.Web.Resources.Pages
+@inject UserManager<AppUser> Users
+@inject SignInManager<AppUser> SignIn
+@inject NavigationManager Nav
+@inject IStringLocalizer<RegisterResource> T
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-sm-8 col-md-6 col-lg-5">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title mb-3">@T["CreateAccount"]</h3>
+
+                    @if (!string.IsNullOrEmpty(_error))
+                    {
+                        <div class="alert alert-danger" role="alert">@_error</div>
+                    }
+
+                    <EditForm Model="_model" OnValidSubmit="OnSubmit">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="mb-3">
+                            <label class="form-label">@T["Username"]</label>
+                            <InputText class="form-control" @bind-Value="_model.UserName" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">@T["Email"]</label>
+                            <InputText class="form-control" @bind-Value="_model.Email" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">@T["Password"]</label>
+                            <InputText class="form-control" type="password" @bind-Value="_model.Password" />
+                        </div>
+
+                        <button class="btn btn-primary w-100" type="submit">@T["RegisterButton"]</button>
+                    </EditForm>
+                </div>
+            </div>
+
+            <p class="text-center mt-3">
+                <a href="/">@T["BackToHome"]</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+@code {
+    // TODO: add validation attributes
+    class Model
+    {
+        public string UserName { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
+    }
+
+    private readonly Model _model = new();
+    private string? _error;
+
+    private async Task OnSubmit()
+    {
+        _error = null;
+
+        var user = new AppUser { UserName = _model.UserName, Email = _model.Email };
+        var res = await Users.CreateAsync(user, _model.Password);
+
+        if (!res.Succeeded)
+        {
+            _error = string.Join(" ", res.Errors.Select(e => e.Description));
+            return;
+        }
+
+        await SignIn.SignInAsync(user, isPersistent: true); // cookie
+        Nav.NavigateTo("/");
+    }
+}

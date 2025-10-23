@@ -1,14 +1,17 @@
-﻿using CineQuizAI.Infrastructure.Data;
-using CineQuizAI.Infrastructure.Identity;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Serilog;
-using CineQuizAI.Web.Endpoints;
-using CineQuizAI.Web.Components; // App component
-
-// DI: interface (Application) + impl (Infrastructure)
+﻿// DI: interface (Application) + impl (Infrastructure)
 using CineQuizAI.Application.Abstractions.Security;
+using CineQuizAI.Infrastructure.Data;
+using CineQuizAI.Infrastructure.Identity;
 using CineQuizAI.Infrastructure.Services;
+using CineQuizAI.Web.Components; // App component
+using CineQuizAI.Web.Endpoints;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
+using Serilog;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +42,19 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 // Blazor Server
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
+// Localization
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
+// Supported cultures
+var supportedCultures = new[] { new CultureInfo("en"), new CultureInfo("sv") };
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    options.DefaultRequestCulture = new RequestCulture("sv");
+    options.SupportedCultures = supportedCultures;
+    options.SupportedUICultures = supportedCultures;
+    options.ApplyCurrentCultureToResponseHeaders = true; // TODO: keep/disable
+});
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
@@ -46,6 +62,9 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error", createScopeForErrors: true); // TODO: custom error page
     app.UseHsts();
 }
+
+var locOptions = app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value;
+app.UseRequestLocalization(locOptions);
 
 app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
@@ -59,9 +78,7 @@ app.UseAntiforgery();   // TODO: required for components
 app.MapRazorComponents<App>()
    .AddInteractiveServerRenderMode();
 
-app.MapRazorComponents<App>()
-   .AddInteractiveServerRenderMode();
-
-app.MapAuthEndpoints(); // TODO: map more endpoint groups later
+app.MapAuthEndpoints();
+app.MapLocalizationEndpoints(); // TODO: map more endpoint groups later
 
 app.Run();

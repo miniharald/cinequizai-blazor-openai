@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using CineQuizAI.Web.Components.Layout
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -19,6 +20,9 @@
 </head>
 
 <body class="bg-light">
+    <div class="container py-2 d-flex justify-content-end">
+        <LanguageSwitcher />
+    </div>
     <Routes />
 
     <script src="_framework/blazor.web.js"></script>
