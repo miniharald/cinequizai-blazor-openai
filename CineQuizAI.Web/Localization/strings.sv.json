@@ -1,0 +1,42 @@
+{
+  "Shared": {
+    "Labels": {
+      "Password": "Lösenord"
+    },
+    "Errors": {
+      "UnexpectedError": "Oväntat fel uppstod"
+    }
+  },
+  "Register": {
+    "CreateAccount": "Skapa konto",
+    "BackToHome": "Tillbaka till startsidan",
+    "Username": "Användarnamn",
+    "Email": "E-post",
+    "ConfirmPassword": "Bekräfta lösenord",
+    "RegisterButton": "Registrera",
+    "EmailInUse": "Den här e-postadressen används redan",
+    "UsernameTaken": "Användarnamnet är upptaget",
+    "PasswordMismatch": "Lösenorden matchar inte",
+    "PasswordsDoNotMatch": "Lösenorden matchar inte",
+    "AlreadyHaveAccount": "Har du redan ett konto? Logga in",
+    "MissingFields": "Alla fält måste fyllas i",
+    "CreationFailed": "Kunde inte skapa användare",
+    "UnexpectedError": "Ett oväntat fel uppstod"
+  },
+  "Login": {
+    "SignIn": "Logga in",
+    "UsernameOrEmail": "Användarnamn eller e-post",
+    "InvalidCredentials": "Felaktigt användarnamn eller lösenord",
+    "CreateAccount": "Skapa konto"
+  },
+  "Welcome": {
+    "Title": "Välkommen!",
+    "Lead": "Du är inloggad. Välj något av följande:",
+    "GoHome": "Till startsidan"
+  },
+  "SignedOut": {
+    "Title": "Du är nu utloggad",
+    "Info": "Tack för besöket",
+    "LoginAgain": "Logga in igen"
+  }
+}

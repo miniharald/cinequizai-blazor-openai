@@ -1,0 +1,82 @@
+﻿@page "/auth/login"
+
+@using System.ComponentModel.DataAnnotations
+@using System.Net.Http;
+@using System.Web;
+@using Microsoft.AspNetCore.Components;
+@using Microsoft.AspNetCore.Components.Web;
+@using CineQuizAI.Web.Localization.JsonLocalization;
+@using CineQuizAI.Web.Components.Shared;
+
+@inject NavigationManager Nav
+@inject IJsonStringLocalizerFactory L
+@inject IHttpClientFactory HttpClientFactory
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-sm-8 col-md-6 col-lg-5">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title mb-3">@T["SignIn"]</h3>
+
+                    @if (!string.IsNullOrEmpty(_error))
+                    {
+                        <div class="alert alert-danger" role="alert">@_error</div>
+                    }
+
+                    <form method="post" action="/auth/login2">
+                        <AppAntiforgeryToken />
+                        <input type="hidden" name="returnUrl" value="@_returnUrl" />
+                        <div class="mb-3">
+                            <label class="form-label">@T["UsernameOrEmail"]</label>
+                            <input class="form-control" name="userNameOrEmail" value="@_model.UserNameOrEmail" @oninput="e => _model.UserNameOrEmail = e.Value?.ToString() ?? string.Empty" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">@S["Labels:Password"]</label>
+                            <input class="form-control" type="password" name="password" value="@_model.Password" @oninput="e => _model.Password = e.Value?.ToString() ?? string.Empty" />
+                        </div>
+                        <button class="btn btn-primary w-100" type="submit">
+                            @T["SignIn"]
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-3">
+                        <a href="/auth/register">@T["CreateAccount"]</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private IJsonStringLocalizer T = default!;
+    private IJsonStringLocalizer S = default!;
+    private string? _error;
+    private string? _returnUrl;
+    private LoginVm _model = new();
+
+    public class LoginVm
+    {
+        public string UserNameOrEmail { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
+
+    protected override void OnInitialized()
+    {
+        T = L.Create("Login");
+        S = L.Create("Shared");
+        var uri = Nav.ToAbsoluteUri(Nav.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        _returnUrl = query["ReturnUrl"];
+        var errorKey = query["error"];
+        if (!string.IsNullOrEmpty(errorKey))
+        {
+            if (errorKey == "InvalidCredentials")
+                _error = T["InvalidCredentials"];
+            else
+                _error = S["Errors:UnexpectedError"];
+        }
+        // No need to fetch antiforgery field from server anymore
+    }
+}

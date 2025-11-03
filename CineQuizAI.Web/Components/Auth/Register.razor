@@ -1,83 +1,104 @@
 ﻿@page "/auth/register"
 
-@using Microsoft.AspNetCore.Identity
-@using Microsoft.Extensions.Localization
-@using CineQuizAI.Infrastructure.Identity
-@using CineQuizAI.Web.Resources.Pages
-@inject UserManager<AppUser> Users
-@inject SignInManager<AppUser> SignIn
+@using System.ComponentModel.DataAnnotations
+@using System.Web
+@using CineQuizAI.Web.Localization.JsonLocalization
+@using CineQuizAI.Web.Components.Shared
+
 @inject NavigationManager Nav
-@inject IStringLocalizer<RegisterResource> T
+@inject IJsonStringLocalizerFactory L
 
 <div class="container py-4">
-    <div class="row justify-content-center">
+  <div class="row justify-content-center">
         <div class="col-12 col-sm-8 col-md-6 col-lg-5">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h3 class="card-title mb-3">@T["CreateAccount"]</h3>
+    <div class="card shadow-sm">
+         <div class="card-body">
+          <h3 class="card-title mb-3">@R["CreateAccount"]</h3>
 
-                    @if (!string.IsNullOrEmpty(_error))
-                    {
-                        <div class="alert alert-danger" role="alert">@_error</div>
-                    }
+         @if (!string.IsNullOrEmpty(_error))
+        {
+          <div class="alert alert-danger" role="alert">@_error</div>
+        }
 
-                    <EditForm Model="_model" OnValidSubmit="OnSubmit">
-                        <DataAnnotationsValidator />
-                        <ValidationSummary />
+     <form method="post" action="/auth/register2">
+          <AppAntiforgeryToken />
+        <input type="hidden" name="returnUrl" value="@_returnUrl" />
+             
+   <div class="mb-3">
+        <label class="form-label">@R["Username"]</label>
+          <input class="form-control" name="userName" value="@_model.UserName" @oninput="e => _model.UserName = e.Value?.ToString() ?? string.Empty" />
+       </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">@T["Username"]</label>
-                            <InputText class="form-control" @bind-Value="_model.UserName" />
-                        </div>
+           <div class="mb-3">
+             <label class="form-label">@R["Email"]</label>
+ <input class="form-control" type="email" name="email" value="@_model.Email" @oninput="e => _model.Email = e.Value?.ToString() ?? string.Empty" />
+      </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">@T["Email"]</label>
-                            <InputText class="form-control" @bind-Value="_model.Email" />
-                        </div>
+     <div class="mb-3">
+  <label class="form-label">@S["Labels:Password"]</label>
+         <input class="form-control" type="password" name="password" value="@_model.Password" @oninput="e => _model.Password = e.Value?.ToString() ?? string.Empty" />
+  </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">@T["Password"]</label>
-                            <InputText class="form-control" type="password" @bind-Value="_model.Password" />
-                        </div>
+        <div class="mb-3">
+          <label class="form-label">@R["ConfirmPassword"]</label>
+  <input class="form-control" type="password" name="confirmPassword" value="@_model.ConfirmPassword" @oninput="e => _model.ConfirmPassword = e.Value?.ToString() ?? string.Empty" />
+         </div>
 
-                        <button class="btn btn-primary w-100" type="submit">@T["RegisterButton"]</button>
-                    </EditForm>
-                </div>
+        <button class="btn btn-primary w-100" type="submit">
+            @R["RegisterButton"]
+              </button>
+    </form>
+
+<div class="text-center mt-3">
+             <a href="/auth/login">@R["AlreadyHaveAccount"]</a>
+      </div>
+             </div>
             </div>
 
-            <p class="text-center mt-3">
-                <a href="/">@T["BackToHome"]</a>
-            </p>
-        </div>
+   <p class="text-center mt-3">
+             <a href="/">@R["BackToHome"]</a>
+ </p>
+    </div>
     </div>
 </div>
 
 @code {
-    // TODO: add validation attributes
-    class Model
+  private IJsonStringLocalizer R = default!;
+    private IJsonStringLocalizer S = default!;
+    private string? _error;
+    private string? _returnUrl;
+    private RegisterModel _model = new();
+
+    private class RegisterModel
     {
-        public string UserName { get; set; } = "";
-        public string Email { get; set; } = "";
-        public string Password { get; set; } = "";
+ public string UserName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string ConfirmPassword { get; set; } = string.Empty;
     }
 
-    private readonly Model _model = new();
-    private string? _error;
-
-    private async Task OnSubmit()
+    protected override void OnInitialized()
     {
-        _error = null;
+        R = L.Create("Register");
+        S = L.Create("Shared");
 
-        var user = new AppUser { UserName = _model.UserName, Email = _model.Email };
-        var res = await Users.CreateAsync(user, _model.Password);
-
-        if (!res.Succeeded)
+        var uri = Nav.ToAbsoluteUri(Nav.Uri);
+        var query = HttpUtility.ParseQueryString(uri.Query);
+        _returnUrl = query["ReturnUrl"];
+        
+        // Restore non-sensitive data from query string if present
+      var userName = query["userName"];
+        if (!string.IsNullOrEmpty(userName))
+    _model.UserName = userName;
+ 
+        var email = query["email"];
+        if (!string.IsNullOrEmpty(email))
+    _model.Email = email;
+        
+        var errorKey = query["error"];
+        if (!string.IsNullOrEmpty(errorKey))
         {
-            _error = string.Join(" ", res.Errors.Select(e => e.Description));
-            return;
-        }
-
-        await SignIn.SignInAsync(user, isPersistent: true); // cookie
-        Nav.NavigateTo("/");
+            _error = R[errorKey] ?? S["Errors:UnexpectedError"];
+  }
     }
 }

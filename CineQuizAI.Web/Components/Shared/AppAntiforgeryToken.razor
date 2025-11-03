@@ -1,0 +1,19 @@
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+@code {
+ private string? FieldName;
+ private string? Token;
+
+ protected override void OnInitialized()
+ {
+ var tokens = Antiforgery.GetAndStoreTokens(HttpContextAccessor.HttpContext!);
+ FieldName = tokens.FormFieldName;
+ Token = tokens.RequestToken;
+ }
+}
+
+@if (FieldName != null && Token != null)
+{
+ <input type="hidden" name="@FieldName" value="@Token" />
+}

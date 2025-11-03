@@ -1,21 +1,30 @@
-﻿// DI: interface (Application) + impl (Infrastructure)
+﻿using System.Globalization;
+using System.IO;
+
 using CineQuizAI.Application.Abstractions.Security;
 using CineQuizAI.Infrastructure.Data;
 using CineQuizAI.Infrastructure.Identity;
 using CineQuizAI.Infrastructure.Services;
-using CineQuizAI.Web.Components; // App component
+using CineQuizAI.Web.Components;
 using CineQuizAI.Web.Endpoints;
+using CineQuizAI.Web.Localization.JsonLocalization;
+using CineQuizAI.Web;
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
+
 using Serilog;
-using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Logging (Serilog) — TODO: move to config
+// Register IMemoryCache for localization and other services
+builder.Services.AddMemoryCache();
+builder.Services.AddHttpContextAccessor();
+
+// Logging (Serilog)
 builder.Host.UseSerilog((ctx, lc) =>
     lc.ReadFrom.Configuration(ctx.Configuration)
       .WriteTo.Console());
@@ -25,7 +34,7 @@ var connStr = builder.Configuration.GetConnectionString("Default")
               ?? throw new InvalidOperationException("Missing ConnectionStrings:Default");
 builder.Services.AddDbContext<AppDbContext>(opt => opt.UseNpgsql(connStr));
 
-// Identity (GUID keys) — TODO: tune options
+// Identity (GUID keys)
 builder.Services
     .AddIdentity<AppUser, IdentityRole<Guid>>(options =>
     {
@@ -36,49 +45,108 @@ builder.Services
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
-// Token service via interface — TODO: tune lifetime
+// Ställ in custom login-path för Identity/Blazor
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/auth/login";
+    options.AccessDeniedPath = "/auth/login"; // eller egen AccessDenied-sida
+});
+
+// Token service
 builder.Services.AddScoped<ITokenService, TokenService>();
 
 // Blazor Server
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
-// Localization
-builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+// Lägg till HttpClientFactory för DI
+builder.Services.AddHttpClient();
 
-// Supported cultures
-var supportedCultures = new[] { new CultureInfo("en"), new CultureInfo("sv") };
+// RequestLocalization (sv, en)
+var supportedCultures = new[] { new CultureInfo("sv"), new CultureInfo("en") };
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
     options.DefaultRequestCulture = new RequestCulture("sv");
     options.SupportedCultures = supportedCultures;
     options.SupportedUICultures = supportedCultures;
-    options.ApplyCurrentCultureToResponseHeaders = true; // TODO: keep/disable
+
+    // Culture resolution order: query -> cookie -> Accept-Language
+    options.RequestCultureProviders = new IRequestCultureProvider[]
+    {
+        new QueryStringRequestCultureProvider(),
+        new CookieRequestCultureProvider(),
+        new AcceptLanguageHeaderRequestCultureProvider()
+    };
+
+    options.ApplyCurrentCultureToResponseHeaders = true;
 });
+
+// JSON localization registration
+builder.Services.Configure<JsonLocalizationOptions>(opt =>
+{
+    // Folder where strings.en.json / strings.sv.json live
+    opt.ResourcesPath = Path.Combine(builder.Environment.ContentRootPath, "Localization");
+    opt.FileName = "strings"; // results in strings.en.json, strings.sv.json
+});
+
+builder.Services.AddSingleton<IJsonStringLocalizerFactory, JsonStringLocalizerFactory>();
+
+// Global IJsonStringLocalizer instance
+// If your factory has Create() with no parameters, call Create().
+// If it expects one optional argument (e.g., category/scope), pass null positionally.
+builder.Services.AddScoped<IJsonStringLocalizer>(sp =>
+{
+    var factory = sp.GetRequiredService<IJsonStringLocalizerFactory>();
+    return factory.Create(string.Empty); // Use empty string instead of null
+});
+
+// Enable MVC controllers for attribute routing (needed for AntiforgeryController)
+builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true); // TODO: custom error page
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
 }
 
+// Optional: set process-wide default thread culture at startup
+var culture = new CultureInfo("sv");
+CultureInfo.DefaultThreadCurrentCulture = culture;
+CultureInfo.DefaultThreadCurrentUICulture = culture;
+
+// RequestLocalization middleware (must run early)
 var locOptions = app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value;
 app.UseRequestLocalization(locOptions);
 
 app.UseSerilogRequestLogging();
 app.UseHttpsRedirection();
-app.UseStaticFiles();   // TODO: static assets
+app.UseStaticFiles();
+
+// Add this to serve antiforgery JS
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path == "/js/antiforgery.js")
+    {
+        context.Response.ContentType = "application/javascript";
+        await context.Response.SendFileAsync("wwwroot/js/antiforgery.js");
+        return;
+    }
+    await next();
+});
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseAntiforgery();   // TODO: required for components
+app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
-   .AddInteractiveServerRenderMode();
+ .AddInteractiveServerRenderMode();
 
 app.MapAuthEndpoints();
-app.MapLocalizationEndpoints(); // TODO: map more endpoint groups later
+app.MapLocalizationEndpoints();
+
+// Enable attribute routing for controllers (needed for AntiforgeryController)
+app.MapControllers();
 
 app.Run();

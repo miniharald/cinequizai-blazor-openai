@@ -1,10 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>f2c9831b-293f-41d7-9522-f2b92c978999</UserSecretsId>
+	<RootNamespace>CineQuizAI.Web</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,6 +22,15 @@
   <ItemGroup>
     <ProjectReference Include="..\CineQuizAI.Application\CineQuizAI.Application.csproj" />
     <ProjectReference Include="..\CineQuizAI.Infrastructure\CineQuizAI.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Localization\strings.en.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Localization\strings.sv.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

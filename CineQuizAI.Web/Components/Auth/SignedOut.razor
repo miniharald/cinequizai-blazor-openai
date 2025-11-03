@@ -1,0 +1,36 @@
+﻿@page "/signed-out"
+@rendermode InteractiveServer
+@using CineQuizAI.Web.Localization.JsonLocalization
+@inject NavigationManager Nav
+@inject IJsonStringLocalizerFactory L
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-sm-8 col-md-6 col-lg-5">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title mb-3">@S["Title"]</h3>
+                    <p>@S["Info"]</p>
+
+                    <button class="btn btn-primary w-100" @onclick="HandleLoginClick">
+                        @S["LoginAgain"]
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private IJsonStringLocalizer S = default!;
+
+    protected override void OnInitialized()
+    {
+        S = L.Create("SignedOut");
+    }
+
+    private void HandleLoginClick()
+    {
+        Nav.NavigateTo("/auth/login");
+    }
+}

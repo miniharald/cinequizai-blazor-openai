@@ -1,0 +1,42 @@
+{
+	"Shared": {
+		"Labels": {
+			"Password": "Password"
+		},
+		"Errors": {
+			"UnexpectedError": "An unexpected error occurred"
+		}
+	},
+	"Register": {
+		"CreateAccount": "Create account",
+		"BackToHome": "Back to home",
+		"Username": "Username",
+		"Email": "Email",
+		"ConfirmPassword": "Confirm password",
+		"RegisterButton": "Register",
+		"EmailInUse": "Email is already in use",
+		"UsernameTaken": "Username is already taken",
+		"PasswordMismatch": "Passwords do not match",
+		"PasswordsDoNotMatch": "Passwords do not match",
+		"AlreadyHaveAccount": "Already have an account? Sign in",
+		"MissingFields": "All fields must be filled in",
+		"CreationFailed": "Could not create user",
+		"UnexpectedError": "An unexpected error occurred"
+	},
+	"Login": {
+		"SignIn": "Sign in",
+		"UsernameOrEmail": "Username or email",
+		"InvalidCredentials": "Invalid username or password",
+		"CreateAccount": "Create account"
+	},
+	"Welcome": {
+		"Title": "Welcome!",
+		"Lead": "You are logged in. Choose one of the following:",
+		"GoHome": "Go to home page"
+	},
+	"SignedOut": {
+		"Title": "You are now signed out",
+		"Info": "Thank you for visiting",
+		"LoginAgain": "Sign in again"
+	}
+}
