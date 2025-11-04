@@ -3,6 +3,7 @@ using System.IO;
 
 using CineQuizAI.Application.Abstractions.Security;
 using CineQuizAI.Infrastructure.Data;
+using CineQuizAI.Infrastructure.DependencyInjection;
 using CineQuizAI.Infrastructure.Identity;
 using CineQuizAI.Infrastructure.Services;
 using CineQuizAI.Web.Components;
@@ -54,6 +55,9 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 // Token service
 builder.Services.AddScoped<ITokenService, TokenService>();
+
+// TMDb integration
+builder.Services.AddTmdbServices(builder.Configuration);
 
 // Blazor Server
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
