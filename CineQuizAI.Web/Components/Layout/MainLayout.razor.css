@@ -1,3 +1,18 @@
+.page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar {
+    background-color: #f8f9fa;
+    width: 100%;
+}
+
+main {
+    flex: 1;
+}
+
 #blazor-error-ui {
     background: lightyellow;
     bottom: 0;
@@ -11,8 +26,8 @@
 }
 
     #blazor-error-ui .dismiss {
-        cursor: pointer;
-        position: absolute;
-        right: 0.75rem;
-        top: 0.5rem;
+  cursor: pointer;
+    position: absolute;
+     right: 0.75rem;
+    top: 0.5rem;
     }

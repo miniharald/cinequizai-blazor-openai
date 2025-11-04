@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.IO;
 
+using CineQuizAI.Application;
 using CineQuizAI.Application.Abstractions.Security;
 using CineQuizAI.Infrastructure.Data;
 using CineQuizAI.Infrastructure.DependencyInjection;
@@ -55,6 +56,12 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 // Token service
 builder.Services.AddScoped<ITokenService, TokenService>();
+
+// Application services
+builder.Services.AddApplicationServices();
+
+// Infrastructure - Repositories
+builder.Services.AddRepositories();
 
 // TMDb integration
 builder.Services.AddTmdbServices(builder.Configuration);
@@ -149,6 +156,8 @@ app.MapRazorComponents<App>()
 
 app.MapAuthEndpoints();
 app.MapLocalizationEndpoints();
+app.MapUserPreferenceEndpoints();
+app.MapQuizEndpoints();
 
 // Enable attribute routing for controllers (needed for AntiforgeryController)
 app.MapControllers();

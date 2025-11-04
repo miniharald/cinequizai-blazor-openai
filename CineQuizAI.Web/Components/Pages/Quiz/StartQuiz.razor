@@ -1,0 +1,279 @@
+@page "/quiz/start"
+@using CineQuizAI.Application.Abstractions.ExternalServices
+@using CineQuizAI.Application.Features.Quiz.Commands
+@using CineQuizAI.Application.Features.Quiz.Handlers
+@using CineQuizAI.Application.Features.UserPreferences.Handlers
+@using CineQuizAI.Application.Features.UserPreferences.Queries
+@using CineQuizAI.Domain.Enums
+@using CineQuizAI.Infrastructure.Identity
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@inject ITmdbClient TmdbClient
+@inject StartQuizHandler StartQuizHandler
+@inject GetUserPreferenceHandler PreferenceHandler
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+@rendermode InteractiveServer
+
+<PageTitle>Start Quiz - CineQuiz AI</PageTitle>
+
+<div class="container mt-5">
+    <h1 class="mb-4">Start New Quiz</h1>
+
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <div class="alert alert-danger">@_errorMessage</div>
+    }
+
+    <div class="row">
+      <div class="col-md-8">
+ <!-- Search Section -->
+            <div class="card mb-4">
+     <div class="card-header">
+       <h5>1. Search for a Title</h5>
+    </div>
+                <div class="card-body">
+      <div class="mb-3">
+    <label class="form-label">Category</label>
+   <div class="btn-group w-100" role="group">
+      <input type="radio" class="btn-check" id="categoryMovie" 
+           @onchange="() => _selectedCategory = QuizCategory.Movie" 
+checked="@(_selectedCategory == QuizCategory.Movie)">
+ <label class="btn btn-outline-primary" for="categoryMovie">Movie</label>
+      
+     <input type="radio" class="btn-check" id="categoryTv" 
+      @onchange="() => _selectedCategory = QuizCategory.Tv" 
+        checked="@(_selectedCategory == QuizCategory.Tv)">
+          <label class="btn btn-outline-primary" for="categoryTv">TV Series</label>
+     </div>
+     </div>
+
+          <div class="input-group mb-3">
+        <input type="text" class="form-control" @bind="_searchQuery" 
+        @bind:event="oninput" placeholder="Search for a title..." 
+   @onkeyup="SearchTitles" />
+    <button class="btn btn-primary" @onclick="SearchTitles" disabled="@_isSearching">
+     @if (_isSearching)
+       {
+     <span class="spinner-border spinner-border-sm me-2"></span>
+  }
+   Search
+  </button>
+  </div>
+
+      <!-- Search Results -->
+ @if (_searchResults.Any())
+    {
+       <div class="list-group">
+      @foreach (var result in _searchResults)
+         {
+             <a href="#" class="list-group-item list-group-item-action @(_selectedTitle?.Id == result.Id ? "active" : "")"
+   @onclick="() => SelectTitle(result)" @onclick:preventDefault>
+    <div class="d-flex w-100 justify-content-between">
+   <h6 class="mb-1">@result.Title</h6>
+     <small>@result.Year</small>
+         </div>
+        <p class="mb-1 small">@result.Overview</p>
+  </a>
+     }
+       </div>
+       }
+    </div>
+  </div>
+
+<!-- Quiz Settings -->
+      @if (_selectedTitle is not null)
+     {
+ <div class="card mb-4">
+ <div class="card-header">
+   <h5>2. Quiz Settings</h5>
+   </div>
+          <div class="card-body">
+               <div class="mb-3">
+         <label class="form-label">Difficulty</label>
+   <select class="form-select" @bind="_selectedDifficulty">
+        <option value="@QuizDifficulty.Easy">Easy</option>
+     <option value="@QuizDifficulty.Medium">Medium</option>
+            <option value="@QuizDifficulty.Hard">Hard</option>
+         </select>
+       </div>
+
+        <div class="mb-3">
+<label class="form-label">Number of Questions</label>
+     <select class="form-select" @bind="_questionCount">
+          <option value="3">3 Questions</option>
+     <option value="5">5 Questions</option>
+<option value="7">7 Questions</option>
+     <option value="10">10 Questions</option>
+           </select>
+       </div>
+
+ <div class="mb-3">
+  <label class="form-label">Visibility</label>
+     <select class="form-select" @bind="_selectedVisibility">
+     <option value="@QuizVisibility.Public">Public</option>
+    <option value="@QuizVisibility.Friends">Friends Only</option>
+          <option value="@QuizVisibility.Private">Private</option>
+    </select>
+     </div>
+
+ <div class="form-check">
+           <input class="form-check-input" type="checkbox" @bind="_hintMode" id="hintMode">
+   <label class="form-check-label" for="hintMode">
+ Enable Hint Mode (reduces score)
+         </label>
+     </div>
+   </div>
+       </div>
+
+        <button class="btn btn-success btn-lg w-100" @onclick="BeginQuiz" disabled="@_isStarting">
+    @if (_isStarting)
+      {
+       <span class="spinner-border spinner-border-sm me-2"></span>
+ }
+     Start Quiz
+      </button>
+    }
+        </div>
+
+    <!-- Preview Panel -->
+ <div class="col-md-4">
+        @if (_selectedTitle is not null)
+            {
+       <div class="card">
+      <div class="card-header">
+     <h5>Selected Title</h5>
+</div>
+    <div class="card-body">
+        @if (!string.IsNullOrEmpty(_selectedTitle.PosterPath))
+   {
+     <img src="https://image.tmdb.org/t/p/w500@(_selectedTitle.PosterPath)" 
+        class="img-fluid rounded mb-3" alt="@_selectedTitle.Title" />
+          }
+ <h5>@_selectedTitle.Title</h5>
+     <p class="text-muted">@_selectedTitle.Year</p>
+   <p class="small">@_selectedTitle.Overview</p>
+       </div>
+      </div>
+}
+      </div>
+    </div>
+</div>
+
+@code {
+    private string _searchQuery = string.Empty;
+    private QuizCategory _selectedCategory = QuizCategory.Movie;
+    private QuizDifficulty _selectedDifficulty = QuizDifficulty.Medium;
+    private QuizVisibility _selectedVisibility = QuizVisibility.Public;
+    private int _questionCount = 5;
+    private bool _hintMode = false;
+ private string _languageCode = "sv-SE";
+
+    private bool _isSearching = false;
+    private bool _isStarting = false;
+    private string _errorMessage = string.Empty;
+
+    private List<TmdbSearchResult> _searchResults = new();
+    private TmdbSearchResult? _selectedTitle = null;
+  private Guid? _userId = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+  var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+     {
+   var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+         if (userIdClaim is not null && Guid.TryParse(userIdClaim.Value, out var userId))
+   {
+    _userId = userId;
+    await LoadUserPreferences(userId);
+    }
+        }
+    }
+
+private async Task LoadUserPreferences(Guid userId)
+    {
+ try
+  {
+  var query = new GetUserPreferenceQuery { UserId = userId };
+    var preferences = await PreferenceHandler.HandleAsync(query);
+
+     _selectedCategory = preferences.DefaultCategory;
+      _selectedDifficulty = preferences.DefaultDifficulty;
+ _languageCode = preferences.LanguageCode;
+     }
+    catch (Exception ex)
+   {
+       _errorMessage = $"Failed to load preferences: {ex.Message}";
+        }
+    }
+
+    private async Task SearchTitles()
+    {
+        if (string.IsNullOrWhiteSpace(_searchQuery))
+            return;
+
+        _isSearching = true;
+        _errorMessage = string.Empty;
+        _searchResults.Clear();
+        _selectedTitle = null;
+
+ try
+        {
+          _searchResults = _selectedCategory == QuizCategory.Movie
+         ? await TmdbClient.SearchMoviesAsync(_searchQuery, _languageCode)
+      : await TmdbClient.SearchTvSeriesAsync(_searchQuery, _languageCode);
+        }
+      catch (Exception ex)
+    {
+       _errorMessage = $"Search failed: {ex.Message}";
+        }
+        finally
+   {
+          _isSearching = false;
+    }
+    }
+
+  private void SelectTitle(TmdbSearchResult title)
+    {
+        _selectedTitle = title;
+    }
+
+    private async Task BeginQuiz()
+    {
+     if (_selectedTitle is null || _userId is null)
+   return;
+
+        _isStarting = true;
+        _errorMessage = string.Empty;
+
+    try
+     {
+        var command = new StartQuizCommand
+       {
+     UserId = _userId.Value,
+      TmdbId = _selectedTitle.Id,
+    TitleType = _selectedCategory == QuizCategory.Movie ? TitleType.Movie : TitleType.Tv,
+    Category = _selectedCategory,
+    Difficulty = _selectedDifficulty,
+  LanguageCode = _languageCode,
+  Visibility = _selectedVisibility,
+         HintMode = _hintMode,
+         QuestionCount = _questionCount
+        };
+
+  var session = await StartQuizHandler.HandleAsync(command);
+  
+     // Navigate to quiz play page (will implement in next step)
+      Navigation.NavigateTo($"/quiz/play/{session.Id}");
+    }
+        catch (Exception ex)
+ {
+        _errorMessage = $"Failed to start quiz: {ex.Message}";
+            _isStarting = false;
+}
+    }
+}

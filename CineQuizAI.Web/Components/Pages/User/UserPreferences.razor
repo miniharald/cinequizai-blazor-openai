@@ -1,0 +1,166 @@
+@page "/user/preferences"
+@using CineQuizAI.Application.Features.UserPreferences.Commands
+@using CineQuizAI.Application.Features.UserPreferences.DTOs
+@using CineQuizAI.Application.Features.UserPreferences.Handlers
+@using CineQuizAI.Application.Features.UserPreferences.Queries
+@using CineQuizAI.Domain.Enums
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@attribute [Authorize]
+@inject GetUserPreferenceHandler GetPreferenceHandler
+@inject UpdateUserPreferenceHandler UpdatePreferenceHandler
+@inject AuthenticationStateProvider AuthStateProvider
+@rendermode InteractiveServer
+
+<PageTitle>User Preferences - CineQuiz AI</PageTitle>
+
+<div class="container mt-5">
+    <h1 class="mb-4">User Preferences</h1>
+
+    @if (!string.IsNullOrEmpty(_successMessage))
+    {
+        <div class="alert alert-success">@_successMessage</div>
+  }
+
+  @if (!string.IsNullOrEmpty(_errorMessage))
+ {
+    <div class="alert alert-danger">@_errorMessage</div>
+    }
+
+    @if (_isLoading)
+    {
+  <div class="text-center">
+     <div class="spinner-border" role="status">
+    <span class="visually-hidden">Loading...</span>
+ </div>
+        </div>
+ }
+    else if (_preferences is not null)
+    {
+      <div class="card">
+            <div class="card-body">
+   <EditForm Model="_preferences" OnValidSubmit="SavePreferences">
+     <div class="mb-3">
+ <label class="form-label">Default Category</label>
+      <InputSelect class="form-select" @bind-Value="_preferences.DefaultCategory">
+              <option value="@QuizCategory.Movie">Movie</option>
+      <option value="@QuizCategory.Tv">TV Series</option>
+   </InputSelect>
+    </div>
+
+        <div class="mb-3">
+     <label class="form-label">Default Difficulty</label>
+    <InputSelect class="form-select" @bind-Value="_preferences.DefaultDifficulty">
+   <option value="@QuizDifficulty.Easy">Easy</option>
+       <option value="@QuizDifficulty.Medium">Medium</option>
+<option value="@QuizDifficulty.Hard">Hard</option>
+     </InputSelect>
+         </div>
+
+      <div class="mb-3">
+      <label class="form-label">Language</label>
+             <InputSelect class="form-select" @bind-Value="_preferences.LanguageCode">
+<option value="sv-SE">Swedish (Svenska)</option>
+       <option value="en-US">English</option>
+      </InputSelect>
+ </div>
+
+  <button type="submit" class="btn btn-primary" disabled="@_isSaving">
+            @if (_isSaving)
+      {
+      <span class="spinner-border spinner-border-sm me-2"></span>
+    }
+           Save Preferences
+         </button>
+   </EditForm>
+       </div>
+        </div>
+
+        <div class="mt-3 text-muted">
+  <small>Last updated: @_preferences.UpdatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</small>
+  </div>
+    }
+</div>
+
+@code {
+ private UserPreferenceDto? _preferences;
+    private bool _isLoading = true;
+    private bool _isSaving = false;
+    private string _successMessage = string.Empty;
+    private string _errorMessage = string.Empty;
+
+ protected override async Task OnInitializedAsync()
+{
+   await LoadPreferences();
+    }
+
+    private async Task LoadPreferences()
+    {
+        _isLoading = true;
+  _errorMessage = string.Empty;
+
+  try
+        {
+     var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+    var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+     {
+     var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+    if (userIdClaim is not null && Guid.TryParse(userIdClaim.Value, out var userId))
+    {
+    var query = new GetUserPreferenceQuery { UserId = userId };
+  _preferences = await GetPreferenceHandler.HandleAsync(query);
+ }
+    }
+      }
+    catch (Exception ex)
+        {
+       _errorMessage = $"Failed to load preferences: {ex.Message}";
+        }
+    finally
+     {
+ _isLoading = false;
+ }
+    }
+
+    private async Task SavePreferences()
+    {
+     if (_preferences is null)
+     return;
+
+        _isSaving = true;
+        _successMessage = string.Empty;
+      _errorMessage = string.Empty;
+
+        try
+    {
+  var command = new UpdateUserPreferenceCommand
+  {
+       UserId = _preferences.UserId,
+       DefaultCategory = _preferences.DefaultCategory,
+         DefaultDifficulty = _preferences.DefaultDifficulty,
+     LanguageCode = _preferences.LanguageCode
+        };
+
+            _preferences = await UpdatePreferenceHandler.HandleAsync(command);
+      _successMessage = "Preferences saved successfully!";
+
+   // Auto-hide success message after 3 seconds
+    _ = Task.Delay(3000).ContinueWith(_ => 
+     {
+         _successMessage = string.Empty;
+       InvokeAsync(StateHasChanged);
+   });
+        }
+        catch (Exception ex)
+ {
+   _errorMessage = $"Failed to save preferences: {ex.Message}";
+    }
+      finally
+      {
+_isSaving = false;
+}
+    }
+}
