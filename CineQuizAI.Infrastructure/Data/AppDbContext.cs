@@ -159,14 +159,13 @@ entity.Property(e => e.Difficulty)
    entity.Property(e => e.TmdbId).HasColumnName("tmdb_id");
            entity.Property(e => e.TitleType)
        .HasColumnName("title_type")
-               .HasConversion<string>()
+        .HasConversion<string>()
         .HasMaxLength(20);
-       entity.Property(e => e.SnapshotId).HasColumnName("snapshot_id");
-    entity.Property(e => e.HintMode).HasColumnName("hint_mode");
-      entity.Property(e => e.QuestionCount).HasColumnName("question_count");
-      entity.Property(e => e.Score).HasColumnName("score");
-      entity.Property(e => e.StartedAt).HasColumnName("started_at");
-   entity.Property(e => e.FinishedAt).HasColumnName("finished_at");
+  entity.Property(e => e.SnapshotId).HasColumnName("snapshot_id");
+            entity.Property(e => e.QuestionCount).HasColumnName("question_count");
+            entity.Property(e => e.Score).HasColumnName("score");
+       entity.Property(e => e.StartedAt).HasColumnName("started_at");
+            entity.Property(e => e.FinishedAt).HasColumnName("finished_at");
 
      // Foreign keys
     entity.HasOne(e => e.Snapshot)
@@ -223,9 +222,7 @@ entity.Property(e => e.Id).HasColumnName("id");
       entity.Property(e => e.SelectedIndex).HasColumnName("selected_index");
                 entity.Property(e => e.IsCorrect).HasColumnName("is_correct");
      entity.Property(e => e.TimeSpentMs).HasColumnName("time_spent_ms");
-  entity.Property(e => e.HintsUsed).HasColumnName("hints_used");
-   entity.Property(e => e.HintPenalty).HasColumnName("hint_penalty");
-           entity.Property(e => e.AnsweredAt).HasColumnName("answered_at");
+          entity.Property(e => e.AnsweredAt).HasColumnName("answered_at");
 
       // Foreign key (one-to-one)
                 entity.HasOne(e => e.Question)

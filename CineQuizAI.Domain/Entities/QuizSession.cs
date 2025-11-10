@@ -17,7 +17,6 @@ public Guid? UserId { get; set; } // Nullable to preserve history if user is del
     public long TmdbId { get; set; }
     public TitleType TitleType { get; set; }
     public Guid SnapshotId { get; set; }
-    public bool HintMode { get; set; }
     public int QuestionCount { get; set; }
  public int Score { get; set; }
     public DateTime StartedAt { get; set; } = DateTime.UtcNow;

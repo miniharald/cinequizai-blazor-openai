@@ -12,39 +12,64 @@
 @inject IJsonStringLocalizerFactory L
 @inject IHttpClientFactory HttpClientFactory
 
-<div class="container py-4">
+<div class="auth-container">
+    <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-12 col-sm-8 col-md-6 col-lg-5">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h3 class="card-title mb-3">@T["SignIn"]</h3>
+   <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5 auth-card">
+       <div class="card">
+         <div class="card-body p-4 p-sm-5">
+     <div class="text-center mb-4">
+ <h2 class="card-title fw-bold">@T["SignIn"]</h2>
+    <p class="text-secondary">Välkommen tillbaka!</p>
+     </div>
 
-                    @if (!string.IsNullOrEmpty(_error))
-                    {
-                        <div class="alert alert-danger" role="alert">@_error</div>
-                    }
+    @if (!string.IsNullOrEmpty(_error))
+  {
+ <div class="alert alert-danger" role="alert">
+ <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    @_error
+  </div>
+      }
 
-                    <form method="post" action="/auth/login2">
-                        <AppAntiforgeryToken />
-                        <input type="hidden" name="returnUrl" value="@_returnUrl" />
-                        <div class="mb-3">
-                            <label class="form-label">@T["UsernameOrEmail"]</label>
-                            <input class="form-control" name="userNameOrEmail" value="@_model.UserNameOrEmail" @oninput="e => _model.UserNameOrEmail = e.Value?.ToString() ?? string.Empty" />
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">@S["Labels:Password"]</label>
-                            <input class="form-control" type="password" name="password" value="@_model.Password" @oninput="e => _model.Password = e.Value?.ToString() ?? string.Empty" />
-                        </div>
-                        <button class="btn btn-primary w-100" type="submit">
-                            @T["SignIn"]
-                        </button>
-                    </form>
+     <form method="post" action="/auth/login2">
+ <AppAntiforgeryToken />
+          <input type="hidden" name="returnUrl" value="@_returnUrl" />
+           
+      <div class="mb-3">
+        <label class="form-label">@T["UsernameOrEmail"]</label>
+  <input class="form-control form-control-lg" 
+      name="userNameOrEmail" 
+   value="@_model.UserNameOrEmail" 
+ @oninput="e => _model.UserNameOrEmail = e.Value?.ToString() ?? string.Empty"
+              placeholder="@T["UsernameOrEmail"]" 
+       required />
+         </div>
+      
+      <div class="mb-4">
+           <label class="form-label">@S["Labels:Password"]</label>
+          <input class="form-control form-control-lg" 
+   type="password" 
+   name="password" 
+      value="@_model.Password" 
+     @oninput="e => _model.Password = e.Value?.ToString() ?? string.Empty"
+    placeholder="@S["Labels:Password"]" 
+ required />
+    </div>
+         
+ <button class="btn btn-primary btn-lg w-100 mb-3" type="submit">
+  @T["SignIn"]
+      </button>
+     </form>
 
-                    <div class="text-center mt-3">
-                        <a href="/auth/register">@T["CreateAccount"]</a>
-                    </div>
-                </div>
-            </div>
+             <div class="text-center">
+    <p class="text-secondary mb-2">Har du inget konto?</p>
+     <a href="/auth/register" class="btn btn-outline-secondary">
+        @T["CreateAccount"]
+       </a>
+      </div>
+         </div>
+          </div>
+    </div>
         </div>
     </div>
 </div>
@@ -62,21 +87,20 @@
         public string Password { get; set; } = string.Empty;
     }
 
-    protected override void OnInitialized()
+protected override void OnInitialized()
     {
         T = L.Create("Login");
-        S = L.Create("Shared");
+     S = L.Create("Shared");
         var uri = Nav.ToAbsoluteUri(Nav.Uri);
         var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
         _returnUrl = query["ReturnUrl"];
-        var errorKey = query["error"];
-        if (!string.IsNullOrEmpty(errorKey))
+      var errorKey = query["error"];
+if (!string.IsNullOrEmpty(errorKey))
         {
-            if (errorKey == "InvalidCredentials")
-                _error = T["InvalidCredentials"];
-            else
+      if (errorKey == "InvalidCredentials")
+    _error = T["InvalidCredentials"];
+  else
                 _error = S["Errors:UnexpectedError"];
-        }
-        // No need to fetch antiforgery field from server anymore
+  }
     }
 }

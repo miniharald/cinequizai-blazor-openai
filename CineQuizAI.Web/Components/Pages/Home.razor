@@ -1,11 +1,124 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Components.Authorization
+@using CineQuizAI.Application.Abstractions.ExternalServices
+@using CineQuizAI.Web.Localization.JsonLocalization
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ITmdbClient TmdbClient
+@inject ILogger<Home> Logger
+@inject IJsonStringLocalizerFactory L
+@rendermode InteractiveServer
 
-<PageTitle>Home</PageTitle>
+<PageTitle>@H["PageTitle"]</PageTitle>
 
-<div class="container mt-5">
-    <div class="alert alert-success" role="alert">
-        <h1 class="display-4">Hello, world!</h1>
-        <p class="lead">Welcome to your new app.</p>
+<div class="hero-section">
+    <div class="container text-center py-5">
+      <h1 class="display-3 fw-bold mb-4">@H["HeroTitle"]</h1>
+        <p class="lead mb-5">@H["HeroLead"]</p>
+        
+        <AuthorizeView>
+            <Authorized>
+      <!-- Logged in users -->
+    <div class="row justify-content-center">
+          <div class="col-md-8">
+  <div class="d-grid gap-3">
+         <a href="/quiz/start" class="btn btn-primary btn-lg">
+      @H["StartNewQuiz"]
+    </a>
+           <a href="/quiz/history" class="btn btn-outline-primary btn-lg">
+        @H["ViewHistory"]
+               </a>
+          </div>
+             </div>
+     </div>
+            </Authorized>
+            <NotAuthorized>
+            <!-- Not logged in -->
+         <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="alert alert-info mb-4">
+       <h4>@H["WelcomeTitle"]</h4>
+      <p class="mb-0">@H["WelcomeMessage"]</p>
+   </div>
+ <div class="d-grid gap-3">
+    <a href="/auth/login" class="btn btn-success btn-lg">
+              @H["SignIn"]
+                  </a>
+        <a href="/auth/register" class="btn btn-outline-success btn-lg">
+  @H["CreateAccount"]
+  </a>
+                  </div>
+            </div>
     </div>
-    <button class="btn btn-primary">Testa Bootstrap-knapp</button>
+            </NotAuthorized>
+     </AuthorizeView>
+    </div>
 </div>
+
+<!-- Features Section -->
+<div class="container my-5">
+<div class="row text-center">
+   <div class="col-md-4 mb-4">
+  <div class="card h-100">
+          <div class="card-body">
+     <div class="display-4 mb-3">🎬</div>
+        <h5 class="card-title">@H["Feature1Title"]</h5>
+                    <p class="card-text">@H["Feature1Text"]</p>
+   </div>
+ </div>
+ </div>
+    <div class="col-md-4 mb-4">
+      <div class="card h-100">
+<div class="card-body">
+  <div class="display-4 mb-3">🤖</div>
+ <h5 class="card-title">@H["Feature2Title"]</h5>
+       <p class="card-text">@H["Feature2Text"]</p>
+   </div>
+    </div>
+      </div>
+        <div class="col-md-4 mb-4">
+         <div class="card h-100">
+    <div class="card-body">
+        <div class="display-4 mb-3">🏆</div>
+      <h5 class="card-title">@H["Feature3Title"]</h5>
+            <p class="card-text">@H["Feature3Text"]</p>
+   </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works -->
+<div class="container my-5">
+    <h2 class="text-center mb-4">@H["HowItWorksTitle"]</h2>
+ <div class="row">
+        <div class="col-md-3 text-center mb-4">
+            <div class="step-number">1</div>
+            <h5>@H["Step1Title"]</h5>
+            <p>@H["Step1Text"]</p>
+        </div>
+        <div class="col-md-3 text-center mb-4">
+   <div class="step-number">2</div>
+      <h5>@H["Step2Title"]</h5>
+            <p>@H["Step2Text"]</p>
+        </div>
+      <div class="col-md-3 text-center mb-4">
+  <div class="step-number">3</div>
+     <h5>@H["Step3Title"]</h5>
+  <p>@H["Step3Text"]</p>
+    </div>
+        <div class="col-md-3 text-center mb-4">
+          <div class="step-number">4</div>
+            <h5>@H["Step4Title"]</h5>
+  <p>@H["Step4Text"]</p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private IJsonStringLocalizer H = default!;
+
+    protected override void OnInitialized()
+    {
+        H = L.Create("Home");
+    }
+}

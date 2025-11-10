@@ -14,6 +14,5 @@ public sealed record StartQuizCommand
     public QuizDifficulty Difficulty { get; init; }
     public string LanguageCode { get; init; } = "sv-SE";
     public QuizVisibility Visibility { get; init; } = QuizVisibility.Public;
-    public bool HintMode { get; init; } = false;
     public int QuestionCount { get; init; } = 5;
 }

@@ -1,4 +1,5 @@
 using CineQuizAI.Application.Features.Quiz.Handlers;
+using CineQuizAI.Application.Features.Quiz.Services;
 using CineQuizAI.Application.Features.UserPreferences.Handlers;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,7 +16,14 @@ public static class DependencyInjection
         services.AddScoped<GetUserPreferenceHandler>();
  services.AddScoped<UpdateUserPreferenceHandler>();
   services.AddScoped<StartQuizHandler>();
+        services.AddScoped<GetQuizSessionHandler>();
+  services.AddScoped<SubmitAnswerHandler>();
+        services.AddScoped<FinishQuizHandler>();
+        services.AddScoped<GetUserQuizHistoryHandler>();
 
- return services;
-    }
+        // Register services
+        services.AddScoped<QuestionPoolService>();
+
+        return services;
+  }
 }

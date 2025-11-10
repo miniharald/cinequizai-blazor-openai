@@ -25,20 +25,22 @@ public class TmdbClient : ITmdbClient
         ILogger<TmdbClient> logger,
         IOptions<TmdbConfiguration> config)
     {
-        _httpClient = httpClient;
-   _logger = logger;
-        _config = config.Value;
+     _httpClient = httpClient;
+ _logger = logger;
+     _config = config.Value;
 
-   // Configure JSON serialization
+        // Configure JSON serialization
         _jsonOptions = new JsonSerializerOptions
-        {
-       PropertyNameCaseInsensitive = true,
-        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-     };
+      {
+        PropertyNameCaseInsensitive = true,
+     DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+  };
 
         // Configure HttpClient
-        _httpClient.BaseAddress = new Uri(_config.BaseUrl);
-        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_config.ApiKey}");
+ // Ensure BaseUrl ends with / for proper relative URL resolution
+   var baseUrl = _config.BaseUrl.TrimEnd('/') + "/";
+        _httpClient.BaseAddress = new Uri(baseUrl);
+      _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_config.ApiKey}");
         _httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
     _httpClient.Timeout = TimeSpan.FromSeconds(_config.TimeoutSeconds);
     }
@@ -50,31 +52,31 @@ public class TmdbClient : ITmdbClient
     {
         _logger.LogInformation("Fetching movie snapshot for TMDb ID: {TmdbId}, Language: {Language}", tmdbId, languageCode);
 
-        var url = $"/movie/{tmdbId}?language={languageCode}&append_to_response=credits,keywords";
+ var url = $"movie/{tmdbId}?language={languageCode}&append_to_response=credits,keywords";
         
         var movieDetails = await GetAsync<TmdbMovieDetails>(url, cancellationToken);
         
-        if (movieDetails == null)
+  if (movieDetails == null)
         {
    throw new InvalidOperationException($"Failed to fetch movie details for TMDb ID: {tmdbId}");
-   }
+        }
 
-   return MapMovieToSnapshot(movieDetails, languageCode);
+    return MapMovieToSnapshot(movieDetails, languageCode);
     }
 
     public async Task<TitleFactsSnapshot> GetTvSeriesSnapshotAsync(
-        long tmdbId,
-        string languageCode,
-  CancellationToken cancellationToken = default)
+long tmdbId,
+   string languageCode,
+        CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Fetching TV series snapshot for TMDb ID: {TmdbId}, Language: {Language}", tmdbId, languageCode);
+_logger.LogInformation("Fetching TV series snapshot for TMDb ID: {TmdbId}, Language: {Language}", tmdbId, languageCode);
 
-     var url = $"/tv/{tmdbId}?language={languageCode}&append_to_response=credits,keywords";
-    
+        var url = $"tv/{tmdbId}?language={languageCode}&append_to_response=credits,keywords";
+        
         var tvDetails = await GetAsync<TmdbTvDetails>(url, cancellationToken);
-      
+        
         if (tvDetails == null)
-        {
+   {
             throw new InvalidOperationException($"Failed to fetch TV series details for TMDb ID: {tmdbId}");
         }
 
@@ -100,35 +102,45 @@ public class TmdbClient : ITmdbClient
   string languageCode,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Searching movies: {Query}, Language: {Language}", query, languageCode);
+        _logger.LogInformation("?? Searching movies: Query='{Query}', Language='{Language}'", query, languageCode);
 
-     var url = $"/search/movie?query={Uri.EscapeDataString(query)}&language={languageCode}";
+ var url = $"search/movie?query={Uri.EscapeDataString(query)}&language={languageCode}";
      
+        _logger.LogInformation("?? TMDb API URL: {BaseUrl}{Url}", _httpClient.BaseAddress, url);
+
    var response = await GetAsync<TmdbSearchResponse>(url, cancellationToken);
-        
+      
         if (response == null)
      {
+  _logger.LogWarning("?? TMDb API returned null response for movie search");
     return new List<TmdbSearchResult>();
-    }
+  }
+
+  _logger.LogInformation("? TMDb API returned {Count} movie results", response.Results.Count);
 
         return response.Results.Select(MapSearchItemToResult).ToList();
   }
 
     public async Task<List<TmdbSearchResult>> SearchTvSeriesAsync(
     string query,
-        string languageCode,
-        CancellationToken cancellationToken = default)
-    {
-        _logger.LogInformation("Searching TV series: {Query}, Language: {Language}", query, languageCode);
+   string languageCode,
+      CancellationToken cancellationToken = default)
+  {
+        _logger.LogInformation("?? Searching TV series: Query='{Query}', Language='{Language}'", query, languageCode);
 
-    var url = $"/search/tv?query={Uri.EscapeDataString(query)}&language={languageCode}";
+    var url = $"search/tv?query={Uri.EscapeDataString(query)}&language={languageCode}";
         
+        _logger.LogInformation("?? TMDb API URL: {BaseUrl}{Url}", _httpClient.BaseAddress, url);
+
         var response = await GetAsync<TmdbSearchResponse>(url, cancellationToken);
-        
+  
     if (response == null)
       {
-      return new List<TmdbSearchResult>();
+  _logger.LogWarning("?? TMDb API returned null response for TV search");
+   return new List<TmdbSearchResult>();
     }
+
+  _logger.LogInformation("? TMDb API returned {Count} TV results", response.Results.Count);
 
    return response.Results.Select(MapSearchItemToResult).ToList();
     }

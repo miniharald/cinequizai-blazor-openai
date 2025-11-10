@@ -9,18 +9,29 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @inject IJsonStringLocalizerFactory L
 
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-12 col-sm-8 col-md-6 col-lg-5">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h3 class="card-title mb-3">@W["Title"]</h3>
-                    <p>@W["Lead"]</p>
-                    <button class="btn btn-primary w-100" @onclick="@(() => Nav.NavigateTo("/"))">
-                        @W["GoHome"]
-                    </button>
-                </div>
-            </div>
+<div class="auth-container">
+    <div class="container py-5">
+     <div class="row justify-content-center">
+            <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5 auth-card">
+ <div class="card">
+     <div class="card-body p-4 p-sm-5 text-center">
+           <div class="mb-4">
+   <div class="display-1 mb-3">🎉</div>
+              <h2 class="card-title fw-bold">@W["Title"]</h2>
+      <p class="text-secondary">@W["Lead"]</p>
+       </div>
+
+  <div class="d-grid gap-3">
+        <button class="btn btn-primary btn-lg" @onclick="@(() => Nav.NavigateTo("/"))">
+@W["GoHome"]
+    </button>
+        <a href="/quiz/start" class="btn btn-success btn-lg">
+   @W["StartQuiz"]
+       </a>
+       </div>
+        </div>
+  </div>
+ </div>
         </div>
     </div>
 </div>

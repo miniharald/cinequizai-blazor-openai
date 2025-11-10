@@ -1,0 +1,297 @@
+@page "/quiz/history"
+@using CineQuizAI.Application.Features.Quiz.DTOs
+@using CineQuizAI.Application.Features.Quiz.Handlers
+@using CineQuizAI.Application.Features.Quiz.Queries
+@using CineQuizAI.Domain.Enums
+@using CineQuizAI.Web.Localization.JsonLocalization
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@attribute [Authorize]
+@inject GetUserQuizHistoryHandler HistoryHandler
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+@inject IJsonStringLocalizerFactory L
+@rendermode InteractiveServer
+
+<PageTitle>@H["PageTitle"]</PageTitle>
+
+<div class="container mt-5">
+    <h1 class="mb-4">@H["Title"]</h1>
+
+    @if (_isLoading)
+    {
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+       <span class="visually-hidden">@H["Loading"]</span>
+          </div>
+        </div>
+    }
+    else
+    {
+        <!-- Filters -->
+        <div class="card mb-4">
+<div class="card-body">
+              <div class="row">
+           <div class="col-md-4">
+                  <label class="form-label">@H["Category"]</label>
+       <select class="form-select" @bind="_selectedCategory" @bind:after="LoadHistory">
+            <option value="">@H["AllCategories"]</option>
+       <option value="@QuizCategory.Movie">@H["CategoryMovie"]</option>
+      <option value="@QuizCategory.Tv">@H["CategoryTv"]</option>
+    </select>
+     </div>
+     <div class="col-md-4">
+    <label class="form-label">@H["Difficulty"]</label>
+              <select class="form-select" @bind="_selectedDifficulty" @bind:after="LoadHistory">
+         <option value="">@H["AllDifficulties"]</option>
+           <option value="@QuizDifficulty.Easy">@H["DifficultyEasy"]</option>
+       <option value="@QuizDifficulty.Medium">@H["DifficultyMedium"]</option>
+            <option value="@QuizDifficulty.Hard">@H["DifficultyHard"]</option>
+      </select>
+        </div>
+   <div class="col-md-4 d-flex align-items-end">
+          <button class="btn btn-outline-secondary w-100" @onclick="ClearFilters">
+        @H["ClearFilters"]
+   </button>
+   </div>
+            </div>
+</div>
+        </div>
+
+      <!-- Quiz History List -->
+        @if (_history is not null && _history.Items.Any())
+        {
+ <div class="row">
+         @foreach (var quiz in _history.Items)
+                {
+            <div class="col-md-6 mb-4">
+    <div class="card h-100 quiz-history-card" @onclick="() => ViewQuizDetails(quiz.Id)" style="cursor: pointer;">
+  <div class="row g-0">
+         @if (!string.IsNullOrEmpty(quiz.PosterUrl))
+  {
+          <div class="col-4">
+       <img src="@quiz.PosterUrl" class="img-fluid rounded-start h-100" style="object-fit: cover;" alt="@quiz.Title" />
+  </div>
+         }
+     <div class="@(string.IsNullOrEmpty(quiz.PosterUrl) ? "col-12" : "col-8")">
+    <div class="card-body">
+       <h5 class="card-title">@quiz.Title</h5>
+ <p class="card-text">
+          <span class="badge bg-@GetCategoryColor(quiz.Category)">@GetCategoryLabel(quiz.Category)</span>
+ <span class="badge bg-@GetDifficultyColor(quiz.Difficulty)">@GetDifficultyLabel(quiz.Difficulty)</span>
+         </p>
+   
+         <div class="mb-2">
+  <strong>@H["Score"]:</strong> @quiz.Score / @quiz.MaxScore (@quiz.PercentageScore%)
+       </div>
+   
+           <div class="progress mb-2" style="height: 20px;">
+          <div class="progress-bar @GetScoreColor(quiz.PercentageScore)" role="progressbar" 
+     style="width: @quiz.PercentageScore%">
+                  @quiz.PercentageScore%
+     </div>
+     </div>
+
+      <small class="text-muted">
+    <strong>@H["Correct"]:</strong> @quiz.CorrectAnswers / @quiz.QuestionCount
+          <br />
+          <strong>@H["Completed"]:</strong> @quiz.FinishedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+  </small>
+    </div>
+          </div>
+       </div>
+ </div>
+   </div>
+           }
+      </div>
+
+   <!-- Pagination -->
+     @if (_history.TotalPages > 1)
+          {
+             <nav aria-label="Quiz history pagination">
+  <ul class="pagination justify-content-center">
+            <li class="page-item @(!_history.HasPreviousPage ? "disabled" : "")">
+        <a class="page-link" @onclick="PreviousPage" @onclick:preventDefault href="#">@H["Previous"]</a>
+    </li>
+       
+     @for (int i = 1; i <= _history.TotalPages; i++)
+       {
+    var pageNum = i;
+        <li class="page-item @(pageNum == _currentPage ? "active" : "")">
+         <a class="page-link" @onclick="() => GoToPage(pageNum)" @onclick:preventDefault href="#">@pageNum</a>
+     </li>
+    }
+
+ <li class="page-item @(!_history.HasNextPage ? "disabled" : "")">
+     <a class="page-link" @onclick="NextPage" @onclick:preventDefault href="#">@H["Next"]</a>
+    </li>
+    </ul>
+         </nav>
+            }
+
+            <div class="text-center mt-3">
+                <p class="text-muted">@H.Format("ShowingOf", _history.Items.Count, _history.TotalCount)</p>
+       </div>
+ }
+else
+        {
+      <div class="alert alert-info">
+          <h4>@H["NoQuizHistory"]</h4>
+                <p>@H["NoQuizHistoryMessage"] <a href="/quiz/start">@H["StartFirstQuiz"]</a></p>
+            </div>
+        }
+    }
+</div>
+
+@code {
+  private IJsonStringLocalizer H = default!;
+    private QuizHistoryResponseDto? _history;
+    private bool _isLoading = true;
+    private Guid? _userId;
+
+    private string _selectedCategory = "";
+    private string _selectedDifficulty = "";
+  private int _currentPage = 1;
+    private const int PageSize = 10;
+
+    protected override void OnInitialized()
+    {
+H = L.Create("QuizHistory");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserId();
+        await LoadHistory();
+    }
+
+    private async Task LoadUserId()
+    {
+ var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+     if (user.Identity?.IsAuthenticated == true)
+    {
+            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+      if (userIdClaim is not null && Guid.TryParse(userIdClaim.Value, out var userId))
+    {
+             _userId = userId;
+            }
+        }
+    }
+
+    private async Task LoadHistory()
+    {
+     if (_userId is null)
+    return;
+
+        _isLoading = true;
+
+      try
+        {
+            QuizCategory? category = null;
+      if (!string.IsNullOrEmpty(_selectedCategory) && Enum.TryParse<QuizCategory>(_selectedCategory, out var cat))
+         {
+          category = cat;
+            }
+
+            QuizDifficulty? difficulty = null;
+        if (!string.IsNullOrEmpty(_selectedDifficulty) && Enum.TryParse<QuizDifficulty>(_selectedDifficulty, out var diff))
+        {
+   difficulty = diff;
+  }
+
+            var query = new GetUserQuizHistoryQuery
+            {
+  UserId = _userId.Value,
+        Category = category,
+                Difficulty = difficulty,
+           PageNumber = _currentPage,
+         PageSize = PageSize
+   };
+
+        _history = await HistoryHandler.HandleAsync(query);
+   }
+        finally
+        {
+   _isLoading = false;
+        }
+    }
+
+    private async Task ClearFilters()
+    {
+      _selectedCategory = "";
+        _selectedDifficulty = "";
+        _currentPage = 1;
+     await LoadHistory();
+    }
+
+  private async Task GoToPage(int pageNumber)
+    {
+        _currentPage = pageNumber;
+   await LoadHistory();
+    }
+
+    private async Task PreviousPage()
+    {
+        if (_history?.HasPreviousPage == true)
+        {
+            _currentPage--;
+ await LoadHistory();
+        }
+    }
+
+    private async Task NextPage()
+    {
+   if (_history?.HasNextPage == true)
+  {
+  _currentPage++;
+      await LoadHistory();
+    }
+    }
+
+    private void ViewQuizDetails(Guid quizId)
+    {
+        // TODO: Navigate to quiz details page
+  Navigation.NavigateTo($"/quiz/play/{quizId}");
+    }
+
+    private string GetCategoryLabel(QuizCategory category) => category switch
+    {
+        QuizCategory.Movie => H["CategoryMovie"],
+        QuizCategory.Tv => H["CategoryTv"],
+     _ => category.ToString()
+    };
+
+    private string GetDifficultyLabel(QuizDifficulty difficulty) => difficulty switch
+    {
+     QuizDifficulty.Easy => H["DifficultyEasy"],
+        QuizDifficulty.Medium => H["DifficultyMedium"],
+    QuizDifficulty.Hard => H["DifficultyHard"],
+    _ => difficulty.ToString()
+    };
+
+    private string GetCategoryColor(QuizCategory category) => category switch
+    {
+ QuizCategory.Movie => "primary",
+        QuizCategory.Tv => "info",
+        _ => "secondary"
+    };
+
+    private string GetDifficultyColor(QuizDifficulty difficulty) => difficulty switch
+    {
+QuizDifficulty.Easy => "success",
+    QuizDifficulty.Medium => "warning",
+        QuizDifficulty.Hard => "danger",
+  _ => "secondary"
+    };
+
+    private string GetScoreColor(int percentage) => percentage switch
+    {
+        >= 80 => "bg-success",
+        >= 60 => "bg-info",
+    >= 40 => "bg-warning",
+        _ => "bg-danger"
+  };
+}

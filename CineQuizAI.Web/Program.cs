@@ -17,8 +17,11 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Server;
 
 using Serilog;
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,22 +32,28 @@ builder.Services.AddHttpContextAccessor();
 // Logging (Serilog)
 builder.Host.UseSerilog((ctx, lc) =>
     lc.ReadFrom.Configuration(ctx.Configuration)
-      .WriteTo.Console());
+  .WriteTo.Console());
 
-// DbContext (PostgreSQL)
+// DbContext (PostgreSQL) - Configure Npgsql with EnableDynamicJson for JSONB support
 var connStr = builder.Configuration.GetConnectionString("Default")
-              ?? throw new InvalidOperationException("Missing ConnectionStrings:Default");
-builder.Services.AddDbContext<AppDbContext>(opt => opt.UseNpgsql(connStr));
+         ?? throw new InvalidOperationException("Missing ConnectionStrings:Default");
+
+// Create NpgsqlDataSourceBuilder with EnableDynamicJson for JSONB serialization
+var dataSourceBuilder = new NpgsqlDataSourceBuilder(connStr);
+dataSourceBuilder.EnableDynamicJson(); // Enable System.Text.Json for JSONB columns
+var dataSource = dataSourceBuilder.Build();
+
+builder.Services.AddDbContext<AppDbContext>(opt => opt.UseNpgsql(dataSource));
 
 // Identity (GUID keys)
 builder.Services
     .AddIdentity<AppUser, IdentityRole<Guid>>(options =>
     {
         options.Password.RequireNonAlphanumeric = false;
-        options.Password.RequireUppercase = false;
-        options.Password.RequiredLength = 6;
+  options.Password.RequireUppercase = false;
+      options.Password.RequiredLength = 6;
     })
-    .AddEntityFrameworkStores<AppDbContext>()
+  .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
 // Ställ in custom login-path för Identity/Blazor
@@ -66,8 +75,16 @@ builder.Services.AddRepositories();
 // TMDb integration
 builder.Services.AddTmdbServices(builder.Configuration);
 
-// Blazor Server
-builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+// OpenAI integration
+builder.Services.AddOpenAIServices(builder.Configuration);
+
+// Blazor Server med Authentication
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
+
+// VIKTIGT: Registrera AuthenticationStateProvider för Blazor Server
+builder.Services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
+builder.Services.AddCascadingAuthenticationState();
 
 // Lägg till HttpClientFactory för DI
 builder.Services.AddHttpClient();
@@ -78,15 +95,15 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
     options.DefaultRequestCulture = new RequestCulture("sv");
     options.SupportedCultures = supportedCultures;
-    options.SupportedUICultures = supportedCultures;
+options.SupportedUICultures = supportedCultures;
 
     // Culture resolution order: query -> cookie -> Accept-Language
-    options.RequestCultureProviders = new IRequestCultureProvider[]
+ options.RequestCultureProviders = new IRequestCultureProvider[]
     {
-        new QueryStringRequestCultureProvider(),
+ new QueryStringRequestCultureProvider(),
         new CookieRequestCultureProvider(),
-        new AcceptLanguageHeaderRequestCultureProvider()
-    };
+new AcceptLanguageHeaderRequestCultureProvider()
+ };
 
     options.ApplyCurrentCultureToResponseHeaders = true;
 });
@@ -96,7 +113,7 @@ builder.Services.Configure<JsonLocalizationOptions>(opt =>
 {
     // Folder where strings.en.json / strings.sv.json live
     opt.ResourcesPath = Path.Combine(builder.Environment.ContentRootPath, "Localization");
-    opt.FileName = "strings"; // results in strings.en.json, strings.sv.json
+ opt.FileName = "strings"; // results in strings.en.json, strings.sv.json
 });
 
 builder.Services.AddSingleton<IJsonStringLocalizerFactory, JsonStringLocalizerFactory>();
@@ -115,10 +132,30 @@ builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
+// Global exception handler - VIKTIGT FÖR DEBUG
+app.Use(async (context, next) =>
+{
+  try
+  {
+     await next();
+ }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Unhandled exception occurred");
+        context.Response.StatusCode = 500;
+      await context.Response.WriteAsync($"Error: {ex.Message}\n\nStack: {ex.StackTrace}");
+    }
+});
+
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    app.UseHsts();
+  app.UseExceptionHandler("/Error", createScopeForErrors: true);
+ app.UseHsts();
+}
+else
+{
+    // Development: Visa detaljerade fel
+    app.UseDeveloperExceptionPage();
 }
 
 // Optional: set process-wide default thread culture at startup
@@ -139,11 +176,11 @@ app.Use(async (context, next) =>
 {
     if (context.Request.Path == "/js/antiforgery.js")
     {
-        context.Response.ContentType = "application/javascript";
-        await context.Response.SendFileAsync("wwwroot/js/antiforgery.js");
-        return;
+     context.Response.ContentType = "application/javascript";
+  await context.Response.SendFileAsync("wwwroot/js/antiforgery.js");
+   return;
     }
-    await next();
+await next();
 });
 
 app.UseAuthentication();
@@ -158,6 +195,7 @@ app.MapAuthEndpoints();
 app.MapLocalizationEndpoints();
 app.MapUserPreferenceEndpoints();
 app.MapQuizEndpoints();
+app.MapDebugEndpoints(); // TMDb config verification
 
 // Enable attribute routing for controllers (needed for AntiforgeryController)
 app.MapControllers();

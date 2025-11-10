@@ -134,5 +134,14 @@ namespace CineQuizAI.Web.Controllers
 
             return Redirect(url);
         }
+
+        [HttpGet("signout")]
+        [HttpPost("signout")]
+        public async Task<IActionResult> SignOut()
+        {
+            await _signInManager.SignOutAsync();
+            _logger.LogInformation("User signed out");
+            return Redirect("/signed-out");
+        }
     }
 }

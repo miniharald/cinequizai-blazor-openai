@@ -10,8 +10,6 @@ public class QuestionAnswer
     public int SelectedIndex { get; set; }
     public bool IsCorrect { get; set; }
     public int TimeSpentMs { get; set; }
-    public short HintsUsed { get; set; }
-    public int HintPenalty { get; set; }
     public DateTime AnsweredAt { get; set; } = DateTime.UtcNow;
   
     // Navigation property

@@ -1,0 +1,451 @@
+/* CineQuiz AI - Unified Theme with WCAG AA Accessibility */
+
+/* ============================================
+   CSS CUSTOM PROPERTIES (Variables)
+   ============================================ */
+
+:root {
+    /* Primary Brand Colors - Movie/Cinema theme */
+    --cq-primary: #6366f1;
+    --cq-primary-hover: #4f46e5;
+    --cq-primary-light: #818cf8;
+    
+    /* Secondary Colors */
+    --cq-secondary: #8b5cf6;
+    --cq-secondary-hover: #7c3aed;
+    
+    /* Accent Colors */
+    --cq-accent: #ec4899;
+    --cq-accent-hover: #db2777;
+    
+    /* Semantic Colors - WCAG AA compliant */
+    --cq-success: #10b981;
+    --cq-success-hover: #059669;
+    --cq-warning: #f59e0b;
+    --cq-warning-hover: #d97706;
+    --cq-danger: #ef4444;
+    --cq-danger-hover: #dc2626;
+    --cq-info: #3b82f6;
+    --cq-info-hover: #2563eb;
+    
+    /* Neutral Colors */
+    --cq-dark: #1f2937;
+    --cq-dark-hover: #111827;
+    --cq-light: #f3f4f6;
+    --cq-light-hover: #e5e7eb;
+    
+    /* Background Colors */
+    --cq-bg-primary: #ffffff;
+    --cq-bg-secondary: #f9fafb;
+    --cq-bg-dark: #111827;
+    --cq-bg-card: #ffffff;
+    
+    /* Text Colors - WCAG AA contrast */
+    --cq-text-primary: #111827;
+    --cq-text-secondary: #6b7280;
+    --cq-text-muted: #9ca3af;
+    --cq-text-inverse: #ffffff;
+    
+    /* Border Colors */
+    --cq-border: #e5e7eb;
+    --cq-border-focus: #6366f1;
+    
+    /* Shadow */
+    --cq-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --cq-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --cq-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --cq-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    
+    /* Spacing */
+    --cq-spacing-xs: 0.5rem;
+    --cq-spacing-sm: 1rem;
+    --cq-spacing-md: 1.5rem;
+    --cq-spacing-lg: 2rem;
+    --cq-spacing-xl: 3rem;
+    
+    /* Border Radius */
+    --cq-radius-sm: 0.375rem;
+    --cq-radius: 0.5rem;
+    --cq-radius-lg: 0.75rem;
+    --cq-radius-xl: 1rem;
+    
+    /* Transitions */
+ --cq-transition: all 0.2s ease-in-out;
+}
+
+/* ============================================
+   LAYOUT
+   ============================================ */
+
+.page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1;
+    padding: 20px 0;
+}
+
+.sidebar {
+    background-color: #f8f9fa;
+    width: 100%;
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+
+.btn-primary {
+    background-color: var(--cq-primary);
+    border-color: var(--cq-primary);
+    color: var(--cq-text-inverse);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: var(--cq-primary-hover);
+    border-color: var(--cq-primary-hover);
+    box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25);
+}
+
+.btn-success {
+    background-color: var(--cq-success);
+    border-color: var(--cq-success);
+}
+
+.btn-success:hover,
+.btn-success:focus {
+    background-color: var(--cq-success-hover);
+    border-color: var(--cq-success-hover);
+    box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25);
+}
+
+.btn-danger {
+    background-color: var(--cq-danger);
+    border-color: var(--cq-danger);
+}
+
+.btn-danger:hover,
+.btn-danger:focus {
+    background-color: var(--cq-danger-hover);
+    border-color: var(--cq-danger-hover);
+    box-shadow: 0 0 0 0.25rem rgba(239, 68, 68, 0.25);
+}
+
+.btn-outline-primary {
+  color: var(--cq-primary);
+  border-color: var(--cq-primary);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+    background-color: var(--cq-primary);
+    border-color: var(--cq-primary);
+    color: var(--cq-text-inverse);
+}
+
+.btn-outline-secondary {
+    color: var(--cq-text-primary);
+    border-color: var(--cq-border);
+}
+
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus {
+    background-color: var(--cq-light);
+    border-color: var(--cq-border);
+    color: var(--cq-text-primary);
+}
+
+.btn-outline-light {
+ border-color: rgba(255, 255, 255, 0.25);
+}
+
+.btn-outline-light:hover,
+.btn-outline-light:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--cq-text-inverse);
+}
+
+/* ============================================
+   CARDS
+   ============================================ */
+
+.card {
+    background-color: var(--cq-bg-card);
+    border: 1px solid var(--cq-border);
+    border-radius: var(--cq-radius);
+    box-shadow: var(--cq-shadow-sm);
+    transition: var(--cq-transition);
+}
+
+.card:hover {
+    box-shadow: var(--cq-shadow-md);
+}
+
+.card-header {
+    background-color: var(--cq-bg-secondary);
+    border-bottom: 1px solid var(--cq-border);
+}
+
+.quiz-history-card {
+    cursor: pointer;
+    transition: var(--cq-transition);
+}
+
+.quiz-history-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--cq-shadow-lg);
+}
+
+/* ============================================
+   FORMS & VALIDATION
+   ============================================ */
+
+.form-control,
+.form-select {
+    border-color: var(--cq-border);
+    transition: var(--cq-transition);
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--cq-border-focus);
+    box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25);
+    outline: none;
+}
+
+.form-label {
+  color: var(--cq-text-primary);
+    font-weight: 500;
+}
+
+/* Blazor Form Validation */
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid var(--cq-success);
+}
+
+.invalid {
+    outline: 1px solid var(--cq-danger);
+}
+
+.validation-message {
+color: var(--cq-danger);
+}
+
+.darker-border-checkbox.form-check-input {
+    border-color: #929292;
+}
+
+/* ============================================
+   ALERTS
+   ============================================ */
+
+.alert-success {
+    background-color: rgba(16, 185, 129, 0.1);
+ border-color: var(--cq-success);
+    color: #065f46;
+}
+
+.alert-danger {
+    background-color: rgba(239, 68, 68, 0.1);
+    border-color: var(--cq-danger);
+    color: #991b1b;
+}
+
+.alert-info {
+    background-color: rgba(59, 130, 246, 0.1);
+    border-color: var(--cq-info);
+    color: #1e40af;
+}
+
+.alert-warning {
+    background-color: rgba(245, 158, 11, 0.1);
+    border-color: var(--cq-warning);
+    color: #92400e;
+}
+
+/* ============================================
+   BADGES
+   ============================================ */
+
+.badge {
+    font-weight: 500;
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--cq-radius-sm);
+}
+
+.bg-primary {
+    background-color: var(--cq-primary) !important;
+}
+
+.bg-success {
+    background-color: var(--cq-success) !important;
+}
+
+.bg-warning {
+    background-color: var(--cq-warning) !important;
+    color: var(--cq-text-primary) !important;
+}
+
+.bg-danger {
+    background-color: var(--cq-danger) !important;
+}
+
+.bg-info {
+    background-color: var(--cq-info) !important;
+}
+
+.bg-secondary {
+    background-color: var(--cq-text-secondary) !important;
+}
+
+/* ============================================
+   PROGRESS BARS
+   ============================================ */
+
+.progress {
+    background-color: var(--cq-light);
+    border-radius: var(--cq-radius);
+}
+
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+/* ============================================
+   NAVIGATION
+   ============================================ */
+
+.navbar {
+    margin-bottom: 0;
+}
+
+.navbar-dark {
+    background-color: var(--cq-bg-dark) !important;
+}
+
+.navbar-brand {
+    color: var(--cq-text-inverse) !important;
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.75) !important;
+    transition: var(--cq-transition);
+}
+
+.nav-link:hover,
+.nav-link:focus {
+    color: var(--cq-text-inverse) !important;
+}
+
+/* ============================================
+   HERO SECTION
+   ============================================ */
+
+.hero-section {
+    background: linear-gradient(135deg, var(--cq-primary) 0%, var(--cq-secondary) 100%);
+    color: var(--cq-text-inverse);
+    padding: 4rem 0;
+    border-radius: var(--cq-radius-lg);
+    margin-bottom: 2rem;
+}
+
+.hero-section .btn {
+    font-size: 1.125rem;
+    padding: 0.875rem 2rem;
+    border-radius: var(--cq-radius);
+  font-weight: 600;
+}
+
+/* Hero section - White buttons with colored text for better contrast */
+.hero-section .btn-primary {
+    background-color: var(--cq-text-inverse);
+    border-color: var(--cq-text-inverse);
+    color: var(--cq-primary);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.hero-section .btn-primary:hover,
+.hero-section .btn-primary:focus {
+    background-color: #f8f9fa;
+  border-color: #f8f9fa;
+    color: var(--cq-primary-hover);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.hero-section .btn-outline-primary {
+    background-color: transparent;
+    border-color: var(--cq-text-inverse);
+    border-width: 2px;
+    color: var(--cq-text-inverse);
+}
+
+.hero-section .btn-outline-primary:hover,
+.hero-section .btn-outline-primary:focus {
+    background-color: var(--cq-text-inverse);
+    border-color: var(--cq-text-inverse);
+    color: var(--cq-primary);
+}
+
+.hero-section .btn-success {
+    background-color: var(--cq-text-inverse);
+    border-color: var(--cq-text-inverse);
+  color: var(--cq-success);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.hero-section .btn-success:hover,
+.hero-section .btn-success:focus {
+ background-color: #f8f9fa;
+    border-color: #f8f9fa;
+    color: var(--cq-success-hover);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.hero-section .btn-outline-success {
+  background-color: transparent;
+    border-color: var(--cq-text-inverse);
+    border-width: 2px;
+    color: var(--cq-text-inverse);
+}
+
+.hero-section .btn-outline-success:hover,
+.hero-section .btn-outline-success:focus {
+    background-color: var(--cq-text-inverse);
+    border-color: var(--cq-text-inverse);
+ color: var(--cq-success);
+}
+
+/* Hero section - Improve alert contrast */
+.hero-section .alert-info {
+    background-color: rgba(255, 255, 255, 0.95);
+    border-color: var(--cq-text-inverse);
+    color: var(--cq-text-primary);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .hero-section {
+    padding: 2rem 0;
+    }
+    
+    .hero-section .btn {
+        font-size: 1rem;
+        padding: 0.75rem 1.5rem;
+    }
+    
+    .hero-section .display-3 {
+        font-size: 2.5rem;
+    }
+    
+    .hero-section .lead {
+    font-size: 1.1rem;
+    }
+}

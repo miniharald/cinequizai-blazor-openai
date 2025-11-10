@@ -16,7 +16,6 @@ public sealed record QuizSessionDto
     public string Title { get; init; } = string.Empty;
   public long TmdbId { get; init; }
     public TitleType TitleType { get; init; }
-    public bool HintMode { get; init; }
     public int QuestionCount { get; init; }
     public int Score { get; init; }
     public DateTime StartedAt { get; init; }

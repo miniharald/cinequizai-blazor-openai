@@ -8,57 +8,93 @@
 @inject NavigationManager Nav
 @inject IJsonStringLocalizerFactory L
 
-<div class="container py-4">
-  <div class="row justify-content-center">
-        <div class="col-12 col-sm-8 col-md-6 col-lg-5">
-    <div class="card shadow-sm">
-         <div class="card-body">
-          <h3 class="card-title mb-3">@R["CreateAccount"]</h3>
+<div class="auth-container">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+     <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5 auth-card">
+         <div class="card">
+     <div class="card-body p-4 p-sm-5">
+        <div class="text-center mb-4">
+          <h2 class="card-title fw-bold">@R["CreateAccount"]</h2>
+           <p class="text-secondary">@R["CreateAccount"]</p>
+ </div>
 
-         @if (!string.IsNullOrEmpty(_error))
-        {
-          <div class="alert alert-danger" role="alert">@_error</div>
-        }
+                @if (!string.IsNullOrEmpty(_error))
+      {
+      <div class="alert alert-danger" role="alert">
+                  <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                   @_error
+   </div>
+            }
 
-     <form method="post" action="/auth/register2">
-          <AppAntiforgeryToken />
+             <form method="post" action="/auth/register2">
+<AppAntiforgeryToken />
         <input type="hidden" name="returnUrl" value="@_returnUrl" />
-             
-   <div class="mb-3">
-        <label class="form-label">@R["Username"]</label>
-          <input class="form-control" name="userName" value="@_model.UserName" @oninput="e => _model.UserName = e.Value?.ToString() ?? string.Empty" />
+    
+             <div class="mb-3">
+ <label class="form-label">@R["Username"]</label>
+ <input class="form-control form-control-lg" 
+              name="userName" 
+             value="@_model.UserName" 
+               @oninput="e => _model.UserName = e.Value?.ToString() ?? string.Empty"
+           placeholder="@R["Username"]" 
+      required />
        </div>
 
-           <div class="mb-3">
-             <label class="form-label">@R["Email"]</label>
- <input class="form-control" type="email" name="email" value="@_model.Email" @oninput="e => _model.Email = e.Value?.ToString() ?? string.Empty" />
-      </div>
+    <div class="mb-3">
+  <label class="form-label">@R["Email"]</label>
+       <input class="form-control form-control-lg" 
+     type="email" 
+          name="email" 
+      value="@_model.Email" 
+       @oninput="e => _model.Email = e.Value?.ToString() ?? string.Empty"
+  placeholder="@R["Email"]" 
+     required />
+     </div>
 
-     <div class="mb-3">
-  <label class="form-label">@S["Labels:Password"]</label>
-         <input class="form-control" type="password" name="password" value="@_model.Password" @oninput="e => _model.Password = e.Value?.ToString() ?? string.Empty" />
-  </div>
+    <div class="mb-3">
+      <label class="form-label">@S["Labels:Password"]</label>
+         <input class="form-control form-control-lg" 
+    type="password" 
+             name="password" 
+   value="@_model.Password" 
+ @oninput="e => _model.Password = e.Value?.ToString() ?? string.Empty"
+          placeholder="@S["Labels:Password"]" 
+         required />
+          </div>
 
-        <div class="mb-3">
-          <label class="form-label">@R["ConfirmPassword"]</label>
-  <input class="form-control" type="password" name="confirmPassword" value="@_model.ConfirmPassword" @oninput="e => _model.ConfirmPassword = e.Value?.ToString() ?? string.Empty" />
-         </div>
+<div class="mb-4">
+    <label class="form-label">@R["ConfirmPassword"]</label>
+  <input class="form-control form-control-lg" 
+     type="password" 
+   name="confirmPassword" 
+      value="@_model.ConfirmPassword" 
+       @oninput="e => _model.ConfirmPassword = e.Value?.ToString() ?? string.Empty"
+    placeholder="@R["ConfirmPassword"]" 
+   required />
+        </div>
 
-        <button class="btn btn-primary w-100" type="submit">
-            @R["RegisterButton"]
-              </button>
+         <button class="btn btn-primary btn-lg w-100 mb-3" type="submit">
+              @R["RegisterButton"]
+        </button>
     </form>
 
-<div class="text-center mt-3">
-             <a href="/auth/login">@R["AlreadyHaveAccount"]</a>
-      </div>
-             </div>
-            </div>
-
-   <p class="text-center mt-3">
-             <a href="/">@R["BackToHome"]</a>
- </p>
+         <div class="text-center">
+      <p class="text-secondary mb-2">@R["AlreadyHaveAccount"]</p>
+       <a href="/auth/login" class="btn btn-outline-secondary">
+    @S["Labels:SignIn"]
+       </a>
+                </div>
     </div>
+    </div>
+
+      <p class="text-center mt-4">
+            <a href="/" class="text-secondary">
+            <i class="bi bi-arrow-left me-2"></i>@R["BackToHome"]
+    </a>
+      </p>
+            </div>
+        </div>
     </div>
 </div>
 
