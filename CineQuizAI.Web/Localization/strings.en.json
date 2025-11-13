@@ -26,8 +26,10 @@
 	},
 	"Login": {
 		"SignIn": "Sign in",
+		"Welcome": "Welcome back!",
 		"UsernameOrEmail": "Username or email",
 		"InvalidCredentials": "Invalid username or password",
+		"NoAccount": "Don't have an account?",
 		"CreateAccount": "Create account"
 	},
 	"Welcome": {

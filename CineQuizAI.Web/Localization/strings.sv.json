@@ -26,8 +26,10 @@
   },
   "Login": {
     "SignIn": "Logga in",
+    "Welcome": "Välkommen tillbaka!",
     "UsernameOrEmail": "Användarnamn eller e-post",
     "InvalidCredentials": "Felaktigt användarnamn eller lösenord",
+    "NoAccount": "Har du inget konto?",
     "CreateAccount": "Skapa konto"
   },
   "Welcome": {

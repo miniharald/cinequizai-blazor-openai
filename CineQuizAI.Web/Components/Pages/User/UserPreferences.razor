@@ -120,6 +120,37 @@
   protected override async Task OnInitializedAsync()
   {
      await LoadPreferences();
+        
+  // Sync language with current culture cookie
+        if (_preferences != null)
+        {
+      var currentCulture = System.Globalization.CultureInfo.CurrentUICulture.Name;
+         var expectedLanguageCode = currentCulture.StartsWith("sv") ? "sv-SE" : "en-US";
+            
+       // If cookie culture doesn't match database preference, update database silently
+        if (_preferences.LanguageCode != expectedLanguageCode)
+    {
+     _preferences.LanguageCode = expectedLanguageCode;
+  _previousLanguage = expectedLanguageCode;
+      
+       // Update database in background
+          try
+ {
+ var command = new UpdateUserPreferenceCommand
+ {
+          UserId = _preferences.UserId,
+            DefaultCategory = _preferences.DefaultCategory,
+           DefaultDifficulty = _preferences.DefaultDifficulty,
+          LanguageCode = expectedLanguageCode
+        };
+     await UpdatePreferenceHandler.HandleAsync(command);
+    }
+    catch
+                {
+           // Silently fail - user can manually save later
+    }
+            }
+      }
     }
 
     private async Task LoadPreferences()

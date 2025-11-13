@@ -245,18 +245,30 @@ checked="@(_selectedCategory == QuizCategory.Tv)">
        var query = new GetUserPreferenceQuery { UserId = userId };
           var preferences = await PreferenceHandler.HandleAsync(query);
 
-         if (preferences is not null)
+if (preferences is not null)
             {
-            _selectedCategory = preferences.DefaultCategory;
+    _selectedCategory = preferences.DefaultCategory;
     _selectedDifficulty = preferences.DefaultDifficulty;
-          _languageCode = preferences.LanguageCode;
+     _languageCode = preferences.LanguageCode;
          }
+       
+            // Override language with current culture from cookie if different
+            var currentCulture = System.Globalization.CultureInfo.CurrentUICulture.Name;
+            var cookieLanguageCode = currentCulture.StartsWith("sv") ? "sv-SE" : "en-US";
+     if (_languageCode != cookieLanguageCode)
+   {
+   _languageCode = cookieLanguageCode;
+     }
         }
-        catch (Exception ex)
+    catch (Exception ex)
         {
-       Console.WriteLine($"Failed to load preferences: {ex.Message}");
-            // Don't show error to user, just use defaults
-        }
+   Console.WriteLine($"Failed to load preferences: {ex.Message}");
+     // Don't show error to user, just use defaults
+          
+     // Fallback to culture from cookie
+            var currentCulture = System.Globalization.CultureInfo.CurrentUICulture.Name;
+      _languageCode = currentCulture.StartsWith("sv") ? "sv-SE" : "en-US";
+ }
     }
 
     private async Task SearchTitles()

@@ -137,7 +137,7 @@ namespace CineQuizAI.Web.Controllers
 
         [HttpGet("signout")]
         [HttpPost("signout")]
-        public async Task<IActionResult> SignOut()
+        public new async Task<IActionResult> SignOut()
         {
             await _signInManager.SignOutAsync();
             _logger.LogInformation("User signed out");

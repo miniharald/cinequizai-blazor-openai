@@ -82,6 +82,12 @@ builder.Services.AddOpenAIServices(builder.Configuration);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// Konfigurera Blazor Server CircuitOptions
+builder.Services.AddServerSideBlazor().AddCircuitOptions(options =>
+{
+    options.DetailedErrors = builder.Environment.IsDevelopment();
+});
+
 // VIKTIGT: Registrera AuthenticationStateProvider för Blazor Server
 builder.Services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
 builder.Services.AddCascadingAuthenticationState();

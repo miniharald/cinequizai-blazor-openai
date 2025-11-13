@@ -137,15 +137,15 @@ VIKTIGT:
 
  var facts = new
 {
-      TitleType = titleType,
-            Title = snapshot.Title,
+  TitleType = titleType,
+  Title = snapshot.Title,
   Year = snapshot.Year,
-    Overview = snapshot.Overview,
-      Genres = snapshot.Genres,
+  Overview = snapshot.Overview,
+  Genres = snapshot.Genres,
   Cast = snapshot.CastTop.Take(10).Select(c => new { c.Name, c.Character }).ToList(),
-      CreatedBy = snapshot.CreatedBy,
-   SeasonsCount = snapshot.SeasonsCount,
- ProductionCompanies = snapshot.ProductionCompanies,
+  CreatedBy = snapshot.CreatedBy,
+  SeasonsCount = snapshot.SeasonsCount,
+  ProductionCompanies = snapshot.ProductionCompanies,
     OriginCountry = snapshot.OriginCountry,
      OriginalLanguage = snapshot.OriginalLanguage,
      Keywords = snapshot.Keywords.Take(10).ToList(),

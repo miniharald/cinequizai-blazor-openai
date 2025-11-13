@@ -53,6 +53,16 @@
                             </li>
                         </NotAuthorized>
                     </AuthorizeView>
+                    @* Language Switcher *@
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            🌐 @_currentLanguage
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" @onclick='() => ChangeLanguage("sv")' @onclick:preventDefault>🇸🇪 Svenska</a></li>
+                            <li><a class="dropdown-item" href="#" @onclick='() => ChangeLanguage("en")' @onclick:preventDefault>🇬🇧 English</a></li>
+                        </ul>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -65,10 +75,23 @@
 
 @code {
     private IJsonStringLocalizer M = default!;
+    private string _currentLanguage = "sv";
 
     protected override void OnInitialized()
     {
         M = L.Create("MainLayout");
+        
+        // Get current language from cookie or default to Swedish
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+      var culture = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
+        _currentLanguage = culture == "en" ? "EN" : "SV";
+    }
+
+    private void ChangeLanguage(string culture)
+    {
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+   var redirectUri = Uri.EscapeDataString(uri.PathAndQuery);
+        Navigation.NavigateTo($"/culture/set/{culture}?redirectUri={redirectUri}", forceLoad: true);
     }
 
     private void SignOut()

@@ -119,6 +119,15 @@
 
     protected override void OnInitialized()
     {
-        H = L.Create("Home");
+        try
+        {
+         H = L.Create("Home");
+            Logger.LogInformation("Home component initialized successfully");
+        }
+   catch (Exception ex)
+  {
+  Logger.LogError(ex, "Error initializing Home component");
+   throw;
+        }
     }
 }

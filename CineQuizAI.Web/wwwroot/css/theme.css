@@ -433,12 +433,12 @@ color: var(--cq-danger);
 /* Responsive Adjustments */
 @media (max-width: 768px) {
     .hero-section {
-    padding: 2rem 0;
+      padding: 2rem 0;
     }
     
     .hero-section .btn {
         font-size: 1rem;
-        padding: 0.75rem 1.5rem;
+      padding: 0.75rem 1.5rem;
     }
     
     .hero-section .display-3 {
@@ -446,6 +446,59 @@ color: var(--cq-danger);
     }
     
     .hero-section .lead {
-    font-size: 1.1rem;
+        font-size: 1.1rem;
     }
+}
+
+/* ============================================
+   BLAZOR ERROR UI
+   ============================================ */
+
+#blazor-error-ui {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
+    font-weight: 500;
+}
+
+#blazor-error-ui .reload {
+    color: white;
+    text-decoration: underline;
+    margin-left: 0.5rem;
+    font-weight: 600;
+    padding: 0.25rem 0.75rem;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+#blazor-error-ui .reload:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    padding: 0.25rem 0.75rem;
+    font-size: 1.25rem;
+    line-height: 1;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    border-radius: 4px;
+    transition: all 0.2s;
+ margin-left: 1rem;
+}
+
+#blazor-error-ui .dismiss:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
 }

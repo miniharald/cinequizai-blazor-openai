@@ -19,53 +19,53 @@
        <div class="card">
          <div class="card-body p-4 p-sm-5">
      <div class="text-center mb-4">
- <h2 class="card-title fw-bold">@T["SignIn"]</h2>
-    <p class="text-secondary">Välkommen tillbaka!</p>
-     </div>
+                  <h2 class="card-title fw-bold">@T["SignIn"]</h2>
+    <p class="text-secondary">@T["Welcome"]</p>
+                </div>
 
-    @if (!string.IsNullOrEmpty(_error))
-  {
- <div class="alert alert-danger" role="alert">
- <i class="bi bi-exclamation-triangle-fill me-2"></i>
-    @_error
-  </div>
-      }
+       @if (!string.IsNullOrEmpty(_error))
+          {
+         <div class="alert alert-danger" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+      @_error
+             </div>
+    }
 
-     <form method="post" action="/auth/login2">
- <AppAntiforgeryToken />
-          <input type="hidden" name="returnUrl" value="@_returnUrl" />
-           
-      <div class="mb-3">
-        <label class="form-label">@T["UsernameOrEmail"]</label>
-  <input class="form-control form-control-lg" 
-      name="userNameOrEmail" 
-   value="@_model.UserNameOrEmail" 
- @oninput="e => _model.UserNameOrEmail = e.Value?.ToString() ?? string.Empty"
-              placeholder="@T["UsernameOrEmail"]" 
-       required />
-         </div>
-      
-      <div class="mb-4">
-           <label class="form-label">@S["Labels:Password"]</label>
-          <input class="form-control form-control-lg" 
-   type="password" 
-   name="password" 
-      value="@_model.Password" 
-     @oninput="e => _model.Password = e.Value?.ToString() ?? string.Empty"
-    placeholder="@S["Labels:Password"]" 
- required />
-    </div>
+       <form method="post" action="/auth/login2">
+                 <AppAntiforgeryToken />
+         <input type="hidden" name="returnUrl" value="@_returnUrl" />
          
- <button class="btn btn-primary btn-lg w-100 mb-3" type="submit">
-  @T["SignIn"]
-      </button>
-     </form>
+<div class="mb-3">
+             <label class="form-label">@T["UsernameOrEmail"]</label>
+               <input class="form-control form-control-lg" 
+               name="userNameOrEmail" 
+     value="@_model.UserNameOrEmail" 
+                      @oninput="e => _model.UserNameOrEmail = e.Value?.ToString() ?? string.Empty"
+     placeholder="@T["UsernameOrEmail"]" 
+             required />
+   </div>
+   
+                 <div class="mb-4">
+    <label class="form-label">@S["Labels:Password"]</label>
+   <input class="form-control form-control-lg" 
+                type="password" 
+ name="password" 
+         value="@_model.Password" 
+          @oninput="e => _model.Password = e.Value?.ToString() ?? string.Empty"
+  placeholder="@S["Labels:Password"]" 
+          required />
+        </div>
+             
+   <button class="btn btn-primary btn-lg w-100 mb-3" type="submit">
+              @T["SignIn"]
+    </button>
+      </form>
 
-             <div class="text-center">
-    <p class="text-secondary mb-2">Har du inget konto?</p>
-     <a href="/auth/register" class="btn btn-outline-secondary">
-        @T["CreateAccount"]
-       </a>
+  <div class="text-center">
+  <p class="text-secondary mb-2">@T["NoAccount"]</p>
+           <a href="/auth/register" class="btn btn-outline-secondary">
+    @T["CreateAccount"]
+             </a>
       </div>
          </div>
           </div>
